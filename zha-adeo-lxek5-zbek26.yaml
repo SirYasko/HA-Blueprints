@@ -72,7 +72,7 @@ variables:
       value: "HUE_RIGHT"
      
 blueprint:
-  name: SirYasko's LXEK-5/ZBEK-26 v2.0
+  name: SirYasko's LXEK-5/ZBEK-26 v2.1
   description: |
     Control various devices with the Adeo LXEK-5/ZBEK-26 (Leroy Merlin - Lexman) remote connected via ZHA 
     HR-C99C-Z-C045 - https://zigbee.blakadder.com/ADEO_HR-C99C-Z-C045.html
@@ -579,9 +579,15 @@ action:
       {% elif v__command in ("stop", "stop_move_step") and v__command_args0 == 0               and v__command_args1 == 0          %} STOP
       {% else %}                                                                                                                     UNKNOWN
       {% endif %}  
-    v__entity_JSON:     '{{ (states(v__entity_helper) | from_json) }}'
+    v__entity_first:    ' {"entity": "{{v__entity_1 or v__entity_2 or v__entity_3 or v__entity_4}}", "type": "AUTO"} '
+    v__entity_JSON:     >
+      {% if states(v__entity_helper) == "unknown" %}
+        {{ v__entity_first }}
+      {% else %}
+        {{ (states(v__entity_helper) | from_json) }}'
+      {% endif %}
     v__entity:          '{{ v__entity_JSON.entity }}' 
-    v__entity_info:     '{{ expand(v__entity) }}' #v__entity_state: '{{ states[v__entity] }}'
+    v__entity_info:     '{{ expand(v__entity) }}'
     v__entity_domain:   >
       {% if v__entity is not none and v__entity != '' %}
         {{ v__entity.split(".")[0] }}
@@ -621,6 +627,7 @@ action:
              v__entity_type_3:               {{v__entity_type_3              }}; 
              v__entity_type_4:               {{v__entity_type_4              }}; 
              _________________________________________________________________
+             v__entity_first:                {{v__entity_first               }};
              v__entity_JSON:                 {{v__entity_JSON                }};   
              v__entity:                      {{v__entity                     }}; 
              v__entity_domain:               {{v__entity_domain              }};
