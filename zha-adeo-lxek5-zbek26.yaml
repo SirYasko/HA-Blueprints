@@ -62,7 +62,7 @@ variables:
       value: "SATURATION_UP"
     - label: "16. Saturation up (D-pad up with green LED - long press)"
       value: "SATURATION_UP_LP"
-    - label: "17. Saturation down (D-pad down with green LED"
+    - label: "17. Saturation down (D-pad down with green LED)"
       value: "SATURATION_DOWN"
     - label: "18. Saturation down (D-pad down with green LED - long press)"
       value: "SATURATION_DOWN_LP"
@@ -72,7 +72,7 @@ variables:
       value: "HUE_RIGHT"
      
 blueprint:
-  name: SirYasko's LXEK-5/ZBEK-26 v2.1.1
+  name: SirYasko's LXEK-5/ZBEK-26 v2.1.2
   description: |
     Control various devices with the Adeo LXEK-5/ZBEK-26 (Leroy Merlin - Lexman) remote connected via ZHA 
     HR-C99C-Z-C045 - https://zigbee.blakadder.com/ADEO_HR-C99C-Z-C045.html
@@ -127,7 +127,7 @@ blueprint:
           name: (Required) Helper
           description: |
             Select a helper to store the currently selected entity: 
-            - expand dropdown and choose 'Create a new Tekst helper' (if available) or click [link](https://my.home-assistant.io/redirect/helpers/) or go to Settings -> Devices & Services -> Helpers
+            - expand the dropdown and choose 'Create a new Text helper' (if available) or click [link](https://my.home-assistant.io/redirect/helpers/) or go to Settings -> Devices & Services -> Helpers
             - add new text helper (name: any, icon: any, min length: 0, max length: 255, mode: text, pattern regex: empty).      
           selector:
             entity:
@@ -468,7 +468,7 @@ blueprint:
               step: 1
               unit_of_measurement: "percent"   
         
-        i__fan_speed_descrease_step:
+        i__fan_speed_decrease_step:
           name: (Optional) Decreasing fan speed by a percentage step
           description: Decrease speed by a percentage step.
           default: 20
@@ -537,7 +537,7 @@ variables:
   v__fan_speed_min:              !input i__fan_speed_min
   v__fan_speed_max:              !input i__fan_speed_max
   v__fan_speed_increase_step:    !input i__fan_speed_increase_step
-  v__fan_speed_descrease_step:   !input i__fan_speed_descrease_step
+  v__fan_speed_decrease_step:   !input i__fan_speed_decrease_step
   # AUTOMATION
   v__automation_trigger_button:  !input i__automation_trigger_button
   
@@ -549,7 +549,6 @@ trigger:
     
 action:
 - variables:
-    v__event:           '{{ trigger.event }}'
     v__event:           '{% if trigger.event is defined %} {{trigger.event}} {% endif %}'
     v__command:         '{% if trigger.event is defined %} {{trigger.event.data.command}} {% elif v__debug_button is not none %} debug_button {% endif %}'
     v__command_args0:   '{% if trigger.event is defined %} {{trigger.event.data.args[0]}} {% elif v__debug_button is not none %} debug_args0  {% endif %}'
@@ -579,17 +578,26 @@ action:
       {% elif v__command in ("stop", "stop_move_step") and v__command_args0 == 0               and v__command_args1 == 0          %} STOP
       {% else %}                                                                                                                     UNKNOWN
       {% endif %}  
-    v__entity_first:    '{{ {"entity": "v__entity_1 or v__entity_2 or v__entity_3 or v__entity_4", "type": "AUTO"} | tojson }}'
-    v__entity_JSON: >   
-      {% if states(v__entity_helper) == "unknown" %}
-        {{ (v__entity_first | from_json ) }}
+    v__entity_first: >
+      {% set first_entity = None %}
+      {% if v__entity_1 is not none %}{% set first_entity = v__entity_1 %}
+      {% elif v__entity_2 is not none %}{% set first_entity = v__entity_2 %}
+      {% elif v__entity_3 is not none %}{% set first_entity = v__entity_3 %}
+      {% elif v__entity_4 is not none %}{% set first_entity = v__entity_4 %}
+      {% endif %}
+      {{ ({"entity": first_entity, "type":"AUTO"}) | tojson }}
+    v__entity_JSON: >
+      {% if states(v__entity_helper) != 'unknown' and states(v__entity_helper) | regex_match('^\\{.*\\}$') %}
+        {{ states(v__entity_helper) | from_json }}
+      {% elif v__entity_first | regex_match('^\\{.*\\}$') %}
+        {{ v__entity_first }}
       {% else %}
-        {{ (states(v__entity_helper) | from_json) }}
+        {{ {"entity": None, "type": "AUTO"} }}
       {% endif %}
     v__entity:          '{{ v__entity_JSON.entity }}' 
     v__entity_info:     '{{ expand(v__entity) }}'
     v__entity_domain:   >
-      {% if v__entity is not none and v__entity != '' %}
+      {% if v__entity is not none and "." in v__entity %}
         {{ v__entity.split(".")[0] }}
       {% else %}
         'unknown'
@@ -1177,10 +1185,10 @@ action:
             {{ v__current_fan_speed + v__fan_speed_increase_step }}
             {% endif %} 
           v__new_fan_speed_down: >
-            {% if v__current_fan_speed - v__fan_speed_descrease_step <= v__fan_speed_min %}
+            {% if v__current_fan_speed - v__fan_speed_decrease_step <= v__fan_speed_min %}
             {{ v__fan_speed_min }}
             {% else %} 
-            {{ v__current_fan_speed - v__fan_speed_descrease_step }}
+            {{ v__current_fan_speed - v__fan_speed_decrease_step }}
             {% endif %}   
           v__new_preset_mode_next: >
             {% set modes = v__fan_preset_modes %}
@@ -1458,8 +1466,8 @@ action:
           - variables:
               v__available_sources: >-
                 {% set source_list = state_attr(v__entity, "source_list") %}
-                {% if source_list is defined and source_list %}
-                  {{ source_list }}
+                {% if source_list is defined and source_list is iterable %}
+                  {{ source_list | list }}
                 {% else %}
                   []
                 {% endif %}
@@ -1486,8 +1494,8 @@ action:
           - variables:
               v__available_sources: >-
                 {% set source_list = state_attr(v__entity, "source_list") %}
-                {% if source_list is defined and source_list %}
-                  {{ source_list }}
+                {% if source_list is defined and source_list is iterable %}
+                  {{ source_list | list }}
                 {% else %}
                   []
                 {% endif %}
