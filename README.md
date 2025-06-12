@@ -51,4 +51,14 @@ Works with:</br>
 </p>
 </br>
 
+<h3>
+Aquarium & terrarium lighting control</br>
+</h3> 
+<p>
+<b><a href="https://github.com/SirYasko/HA-Blueprints/blob/main/aquarium.yaml"> aquarium.yaml</a></b> - this blueprint is designed to create smooth and natural lighting transitions throughout the day. You can specify the brightness and color temperature at three key points: when the light turns on, when it reaches its peak intensity and when it turns off. Based on these settings, the blueprint automatically calculates and applies gradual changes every minute between these moments. This results in a seamless, lifelike lighting effect that closely follows the natural rhythm of daylight.</br>
+</p>
+<p>
+<a href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FSirYasko%2FHA-Blueprints%2Fblob%2Fmain%2Faquarium.yaml" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/blueprint_import.svg" alt="Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled." /></a>
+</p>
+
 <p>All comments are welcome!</p>
