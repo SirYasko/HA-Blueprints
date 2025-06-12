@@ -62,3 +62,11 @@ Aquarium & terrarium lighting control</br>
 </p>
 
 <p>All comments are welcome!</p>
+
+
+If this project has been helpful to you, please consider supporting it with a coffee.
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/siryasko)
+
+
+
