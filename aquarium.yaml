@@ -1,0 +1,267 @@
+blueprint:
+  name: SirYasko's aquarium & terrarium lighting control v1.0.0
+  description: |
+    Aquarium & terrarium lighting control with smooth changes in brightness and color temperature between start, peak and end.
+  source_url: https://github.com/SirYasko/HA-Blueprints/blob/main/aquarium.yaml
+  domain: automation
+  author: SirYasko
+  homeassistant:
+    min_version: 2024.6.0
+
+  input:
+    section_debug:
+      name: "## Debugging and error detection"
+      icon: mdi:bug-outline
+      description: "Enable when you know what you're doing - helpful for error detection and debugging"
+      collapsed: true
+      input:
+        i__debug_f:
+          name: Send debug notifications to HA
+          description: Disabled by default
+          default: false
+          selector:
+            boolean: {}
+
+    section_entity_config:
+      name: "## Entities configuration"
+      icon: mdi:cog
+      description: ""
+      collapsed: false
+      input:
+        i__light_target:
+          name: Light source
+          selector:
+            target:
+              entity:
+                domain: light
+
+    section_start_config:
+      name: "## Start parameters"
+      icon: mdi:cog
+      description: ""
+      collapsed: false
+      input:
+        i__start_time:
+          name: Start time
+          default: "08:00:00"
+          selector:
+            time: {}
+        i__start_brightness:
+          name: Brightness (0–255)
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 255
+              step: 1
+        i__start_color_temp:
+          name: Color temperature (mireds)
+          default: 500
+          selector:
+            color_temp:
+              unit: "mired"
+              min: 153
+              max: 500
+
+    section_peek_config:
+      name: "## Peek parameters"
+      icon: mdi:cog
+      description: ""
+      collapsed: false
+      input:
+        i__peak_time:
+          name: Peak time
+          default: "13:00:00"
+          selector:
+            time: {}
+        i__peak_brightness:
+          name: Brightness (0–255)
+          default: 255
+          selector:
+            number:
+              min: 0
+              max: 255
+              step: 1
+        i__peak_color_temp:
+          name: Color temperature (mireds)
+          default: 153
+          selector:
+            color_temp:
+              unit: "mired"
+              min: 153
+              max: 500
+
+    section_end_config:
+      name: "## End parameters"
+      icon: mdi:cog
+      description: ""
+      collapsed: false
+      input:
+        i__end_time:
+          name: End time
+          default: "22:00:00"
+          selector:
+            time: {}
+        i__end_brightness:
+          name: Brightness (0–255)
+          default: 1
+          selector:
+            number:
+              min: 0
+              max: 255
+              step: 1
+        i__end_color_temp:
+          name: Color temperature (mireds)
+          default: 500
+          selector:
+            color_temp:
+              unit: "mired"
+              min: 153
+              max: 500
+
+    section_other_config:
+      name: "## Other parameters"
+      icon: mdi:cog
+      description: ""
+      collapsed: false
+      input:
+        i__transition_step:
+          name: Transition time (seconds)
+          default: 3
+          selector:
+            number:
+              min: 1
+              max: 60
+              step: 1
+
+trigger:
+  - platform: time_pattern
+    minutes: "/1"
+
+variables:
+  v__debug_f: !input i__debug_f
+
+  v__start_time: !input i__start_time
+  v__peak_time: !input i__peak_time
+  v__end_time: !input i__end_time
+  v__start_brightness: !input i__start_brightness
+  v__peak_brightness: !input i__peak_brightness
+  v__end_brightness: !input i__end_brightness
+  v__start_color_temp: !input i__start_color_temp
+  v__peak_color_temp: !input i__peak_color_temp
+  v__end_color_temp: !input i__end_color_temp
+  v__transition_step: !input i__transition_step
+
+  v__light_target: !input i__light_target
+  v__light_is_on: >
+    {% set entity = v__light_target.entity_id if v__light_target.entity_id is defined else None %}
+    {% if entity %}
+      {{ is_state(entity, 'on') }}
+    {% else %}
+      false
+    {% endif %}
+
+  v__now: "{{ now() | as_datetime }}"
+  v__s_raw: "{{ today_at(v__start_time) | as_datetime }}"
+  v__p_raw: "{{ today_at(v__peak_time) | as_datetime }}"
+  v__e_raw: "{{ today_at(v__end_time) | as_datetime }}"
+
+  v__s: "{{ v__s_raw | as_datetime }}"
+  v__p: "{{ v__p_raw | as_datetime if v__p_raw | as_datetime >= v__s_raw | as_datetime else (v__p_raw | as_datetime + timedelta(days=1)) }}"
+  v__e: "{{ v__e_raw | as_datetime if v__e_raw | as_datetime > v__s_raw | as_datetime else (v__e_raw | as_datetime + timedelta(days=1)) }}"
+
+  v__total_minutes: "{{ ((v__e | as_datetime - v__s | as_datetime).total_seconds() / 60) | int }}"
+  v__minutes_since_start: >
+    {% if v__now | as_datetime < v__s | as_datetime and (v__s | as_datetime - v__now | as_datetime).total_seconds() > 12 * 3600 %}
+      {% set v__s_adj = v__s | as_datetime - timedelta(days=1) %}
+    {% else %}
+      {% set v__s_adj = v__s | as_datetime %}
+    {% endif %}
+    {{ ((v__now | as_datetime - v__s_adj | as_datetime).total_seconds() / 60) | int }}
+  v__peak_minutes: "{{ ((v__p | as_datetime - v__s | as_datetime ).total_seconds() / 60) | int }}"
+  v__brightness: >
+    {% if v__now < v__s or v__now >= v__e %}
+      {{ v__end_brightness }}
+    {% elif v__minutes_since_start <= v__peak_minutes %}
+      {{ (v__start_brightness + (v__peak_brightness - v__start_brightness) * (v__minutes_since_start / v__peak_minutes)) | round(0) | int }}
+    {% else %}
+      {{ (v__peak_brightness + (v__end_brightness - v__peak_brightness) * ((v__minutes_since_start - v__peak_minutes) / (v__total_minutes - v__peak_minutes))) | round(0) | int }}
+    {% endif %}
+  v__color_temp: >
+    {% if v__now < v__s or v__now >= v__e %}
+      {{ v__end_color_temp }}
+    {% elif v__minutes_since_start <= v__peak_minutes %}
+      {{ (v__start_color_temp + (v__peak_color_temp - v__start_color_temp) * (v__minutes_since_start / v__peak_minutes)) | round(0) | int }}
+    {% else %}
+      {{ (v__peak_color_temp + (v__end_color_temp - v__peak_color_temp) * ((v__minutes_since_start - v__peak_minutes) / (v__total_minutes - v__peak_minutes))) | round(0) | int }}
+    {% endif %}
+
+action:
+  # Send debug notification if enabled
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ v__debug_f == true }}"
+        sequence:
+          - service: persistent_notification.create
+            data:
+              title: "Parameters - config & entity"
+              message: |
+                v__light_target: {{ v__light_target | tojson }}
+                v__light_is_on: {{ v__light_is_on }}
+                _____________________________________________________________
+                **Configuration:**
+                v__start_time: {{ v__start_time }}
+                v__peak_time: {{ v__peak_time }} 
+                v__end_time: {{ v__end_time }}
+                v__start_brightness: {{ v__start_brightness }}
+                v__peak_brightness: {{ v__peak_brightness }}
+                v__end_brightness: {{ v__end_brightness }}
+                v__start_color_temp: {{ v__start_color_temp }}
+                v__peak_color_temp: {{ v__peak_color_temp }}
+                v__end_color_temp: {{ v__end_color_temp }}
+                v__transition_step: {{ v__transition_step }}
+                _____________________________________________________________
+                v__now: {{ v__now }}
+                v__s: {{ v__s }}
+                v__p: {{ v__p }}  
+                v__e: {{ v__e }}
+                v__total_minutes: {{ v__total_minutes }}
+                v__minutes_since_start: {{ v__minutes_since_start }}
+                v__peak_minutes: {{ v__peak_minutes }}
+                v__brightness: {{ v__brightness }}
+                v__color_temp: {{ v__color_temp }}
+
+  # Main lighting logic
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ v__now | as_datetime > v__e | as_datetime and v__light_is_on == true}}"
+        sequence:
+          - service: light.turn_off
+            target: "{{ v__light_target }}"
+            data:
+              transition: "{{v__transition_step}}"
+      - conditions:
+          - condition: template
+            value_template: "{{ v__now | as_datetime < v__s | as_datetime and v__light_is_on == true }}"
+        sequence:
+          - service: light.turn_off
+            target: "{{ v__light_target }}"
+            data:
+              transition: "{{v__transition_step}}"
+      - conditions:
+          - condition: template
+            value_template: "{{ v__s | as_datetime <= v__now | as_datetime and v__now | as_datetime < v__e | as_datetime }}"
+        sequence:
+          - service: light.turn_on
+            target: "{{ v__light_target }}"
+            data:
+              brightness: "{{ v__brightness }}"
+              color_temp: "{{ v__color_temp }}"
+              transition: "{{ v__transition_step }}"
+#    default:
+#      - service: light.turn_off
+#        target: "{{ v__light_target }}"
+#        data:
+#          transition: "{{v__transition_step}}"
