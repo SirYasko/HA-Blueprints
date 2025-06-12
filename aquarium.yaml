@@ -1,7 +1,8 @@
 blueprint:
-  name: SirYasko's aquarium & terrarium lighting control v1.0.0
+  name: SirYasko's aquarium & terrarium lighting control v1.1.0
   description: |
-    Aquarium & terrarium lighting control with smooth changes in brightness and color temperature between start, peak and end.
+    Automated aquarium and terrarium lighting control with smooth transitions of brightness and color temperature between start, peak, and end times.
+    Easily configure your lighting schedule to create a smooth and realistic lighting effect that closely follows the natural rhythm of daylight.
   source_url: https://github.com/SirYasko/HA-Blueprints/blob/main/aquarium.yaml
   domain: automation
   author: SirYasko
@@ -25,7 +26,7 @@ blueprint:
     section_entity_config:
       name: "## Entities configuration"
       icon: mdi:cog
-      description: ""
+      description: "Select your light source to control"
       collapsed: false
       input:
         i__light_target:
@@ -37,7 +38,7 @@ blueprint:
 
     section_start_config:
       name: "## Start parameters"
-      icon: mdi:cog
+      icon: mdi:clock-start
       description: ""
       collapsed: false
       input:
@@ -56,6 +57,9 @@ blueprint:
               step: 1
         i__start_color_temp:
           name: Color temperature (mireds)
+          description: |
+            Number indicating color temperature in mireds at the start of time.
+            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
           default: 500
           selector:
             color_temp:
@@ -65,13 +69,18 @@ blueprint:
 
     section_peek_config:
       name: "## Peek parameters"
-      icon: mdi:cog
+      icon: mdi:sun-clock-outline
       description: ""
       collapsed: false
       input:
         i__peak_time:
-          name: Peak time
-          default: "13:00:00"
+          name: Peak time start
+          default: "12:00:00"
+          selector:
+            time: {}
+        i__peak_time_end:
+          name: Peak time end
+          default: "14:00:00"
           selector:
             time: {}
         i__peak_brightness:
@@ -84,6 +93,9 @@ blueprint:
               step: 1
         i__peak_color_temp:
           name: Color temperature (mireds)
+          description: |
+            Number indicating color temperature in mireds at the peek of time.
+            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
           default: 153
           selector:
             color_temp:
@@ -93,7 +105,7 @@ blueprint:
 
     section_end_config:
       name: "## End parameters"
-      icon: mdi:cog
+      icon: mdi:clock-end
       description: ""
       collapsed: false
       input:
@@ -112,6 +124,9 @@ blueprint:
               step: 1
         i__end_color_temp:
           name: Color temperature (mireds)
+          description: |
+            Number indicating color temperature in mireds at the end of time.
+            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
           default: 500
           selector:
             color_temp:
@@ -121,18 +136,19 @@ blueprint:
 
     section_other_config:
       name: "## Other parameters"
-      icon: mdi:cog
+      icon: mdi:tune
       description: ""
       collapsed: false
       input:
         i__transition_step:
           name: Transition time (seconds)
-          default: 3
+          default: 60
           selector:
             number:
               min: 1
               max: 60
-              step: 1
+              step: 0.1
+              unit_of_measurement: "seconds"
 
 trigger:
   - platform: time_pattern
@@ -142,13 +158,16 @@ variables:
   v__debug_f: !input i__debug_f
 
   v__start_time: !input i__start_time
-  v__peak_time: !input i__peak_time
-  v__end_time: !input i__end_time
   v__start_brightness: !input i__start_brightness
-  v__peak_brightness: !input i__peak_brightness
-  v__end_brightness: !input i__end_brightness
   v__start_color_temp: !input i__start_color_temp
+
+  v__peak_time: !input i__peak_time
+  v__peak_time_end: !input i__peak_time_end
+  v__peak_brightness: !input i__peak_brightness
   v__peak_color_temp: !input i__peak_color_temp
+
+  v__end_time: !input i__end_time
+  v__end_brightness: !input i__end_brightness
   v__end_color_temp: !input i__end_color_temp
   v__transition_step: !input i__transition_step
 
@@ -164,10 +183,12 @@ variables:
   v__now: "{{ now() | as_datetime }}"
   v__s_raw: "{{ today_at(v__start_time) | as_datetime }}"
   v__p_raw: "{{ today_at(v__peak_time) | as_datetime }}"
+  v__pe_raw: "{{ today_at(v__peak_time_end) | as_datetime }}"
   v__e_raw: "{{ today_at(v__end_time) | as_datetime }}"
 
   v__s: "{{ v__s_raw | as_datetime }}"
   v__p: "{{ v__p_raw | as_datetime if v__p_raw | as_datetime >= v__s_raw | as_datetime else (v__p_raw | as_datetime + timedelta(days=1)) }}"
+  v__pe: "{{ v__pe_raw | as_datetime if v__pe_raw | as_datetime >= v__p_raw | as_datetime else (v__pe_raw | as_datetime + timedelta(days=1)) }}"
   v__e: "{{ v__e_raw | as_datetime if v__e_raw | as_datetime > v__s_raw | as_datetime else (v__e_raw | as_datetime + timedelta(days=1)) }}"
 
   v__total_minutes: "{{ ((v__e | as_datetime - v__s | as_datetime).total_seconds() / 60) | int }}"
@@ -179,21 +200,27 @@ variables:
     {% endif %}
     {{ ((v__now | as_datetime - v__s_adj | as_datetime).total_seconds() / 60) | int }}
   v__peak_minutes: "{{ ((v__p | as_datetime - v__s | as_datetime ).total_seconds() / 60) | int }}"
+  v__peak_end_minutes: "{{ ((v__pe | as_datetime - v__s | as_datetime ).total_seconds() / 60) | int }}"
+
   v__brightness: >
     {% if v__now < v__s or v__now >= v__e %}
       {{ v__end_brightness }}
     {% elif v__minutes_since_start <= v__peak_minutes %}
       {{ (v__start_brightness + (v__peak_brightness - v__start_brightness) * (v__minutes_since_start / v__peak_minutes)) | round(0) | int }}
+    {% elif v__minutes_since_start <= v__peak_end_minutes %}
+      {{ v__peak_brightness }}
     {% else %}
-      {{ (v__peak_brightness + (v__end_brightness - v__peak_brightness) * ((v__minutes_since_start - v__peak_minutes) / (v__total_minutes - v__peak_minutes))) | round(0) | int }}
+      {{ (v__peak_brightness + (v__end_brightness - v__peak_brightness) * ((v__minutes_since_start - v__peak_end_minutes) / (v__total_minutes - v__peak_end_minutes))) | round(0) | int }}
     {% endif %}
   v__color_temp: >
     {% if v__now < v__s or v__now >= v__e %}
       {{ v__end_color_temp }}
     {% elif v__minutes_since_start <= v__peak_minutes %}
       {{ (v__start_color_temp + (v__peak_color_temp - v__start_color_temp) * (v__minutes_since_start / v__peak_minutes)) | round(0) | int }}
+    {% elif v__minutes_since_start <= v__peak_end_minutes %}
+      {{ v__peak_color_temp }}
     {% else %}
-      {{ (v__peak_color_temp + (v__end_color_temp - v__peak_color_temp) * ((v__minutes_since_start - v__peak_minutes) / (v__total_minutes - v__peak_minutes))) | round(0) | int }}
+      {{ (v__peak_color_temp + (v__end_color_temp - v__peak_color_temp) * ((v__minutes_since_start - v__peak_end_minutes) / (v__total_minutes - v__peak_end_minutes))) | round(0) | int }}
     {% endif %}
 
 action:
