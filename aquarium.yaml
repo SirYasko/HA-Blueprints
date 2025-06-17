@@ -1,8 +1,11 @@
 blueprint:
-  name: SirYasko's aquarium & terrarium lighting control v1.1.0
+  name: SirYasko's aquarium & terrarium lighting control v2.0.0
   description: |
     Automated aquarium and terrarium lighting control with smooth transitions of brightness and color temperature between start, peak, and end times.
     Easily configure your lighting schedule to create a smooth and realistic lighting effect that closely follows the natural rhythm of daylight.
+
+    Like what I do? Fuel my change with a coffee!
+    [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/siryasko)
   source_url: https://github.com/SirYasko/HA-Blueprints/blob/main/aquarium.yaml
   domain: automation
   author: SirYasko
@@ -29,12 +32,56 @@ blueprint:
       description: "Select your light source to control"
       collapsed: false
       input:
-        i__light_target:
+        i__entity_id:
           name: Light source
+          description: >
+            Select the light source you want to control. It can be a single light or a group of lights.
+            Lights have to support brightness and color temperature control.
+            If you select a group of lights, the automation will apply the same settings to all lights in the group.
           selector:
-            target:
-              entity:
+            # target:
+            #   entity:
+            #     domain: light
+            entity:
+              multiple: false
+              filter:
                 domain: light
+
+    section_schedule:
+      name: "## Schedule"
+      icon: mdi:calendar-clock
+      description: "Select the days of the week when the automation should be active. If no days are selected, the automation will not run."
+      collapsed: false
+      input:
+        i__days_of_week:
+          name: Days of the week
+          description: "Select the days of the week when the automation should be active."
+          default:
+            - monday
+            - tuesday
+            - wednesday
+            - thursday
+            - friday
+            - saturday
+            - sunday
+          selector:
+            select:
+              multiple: true
+              options:
+                - value: monday
+                  label: Monday
+                - value: tuesday
+                  label: Tuesday
+                - value: wednesday
+                  label: Wednesday
+                - value: thursday
+                  label: Thursday
+                - value: friday
+                  label: Friday
+                - value: saturday
+                  label: Saturday
+                - value: sunday
+                  label: Sunday
 
     section_start_config:
       name: "## Start parameters"
@@ -47,28 +94,33 @@ blueprint:
           default: "08:00:00"
           selector:
             time: {}
-        i__start_brightness:
-          name: Brightness (0–255)
+        i__start_brightness_percent:
+          name: Brightness (1–100%)
+          description: |
+            Number indicating brightness at the start of time.
+            1% = minimum brightness / 100% = maximum brightness.
           default: 1
           selector:
             number:
-              min: 0
-              max: 255
+              min: 1
+              max: 100
               step: 1
-        i__start_color_temp:
-          name: Color temperature (mireds)
+        i__start_color_temp_kelvin:
+          name: Color temperature (kelvins)
           description: |
-            Number indicating color temperature in mireds at the start of time.
-            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
-          default: 500
+            Number indicating color temperature in kelvins at the start of time.
+            Higher color temperature [K] = colder white / Lower color temperature [K] = warmer white. 
+            **Default:** 2700K (warm white)
+            **Note:** It may vary depending on the type of light. If you're unsure, enable debug mode and check the min_color_temp_kelvin and max_color_temp_kelvin values. Bad or exceeded values ​​may be ignored by the device and then it seems that the blueprint does not work properly.
+          default: 2700
           selector:
             color_temp:
-              unit: "mired"
-              min: 153
-              max: 500
+              unit: "kelvin"
+              min: 1200
+              max: 9000
 
-    section_peek_config:
-      name: "## Peek parameters"
+    section_peak_config:
+      name: "## peak parameters"
       icon: mdi:sun-clock-outline
       description: ""
       collapsed: false
@@ -83,25 +135,30 @@ blueprint:
           default: "14:00:00"
           selector:
             time: {}
-        i__peak_brightness:
-          name: Brightness (0–255)
-          default: 255
+        i__peak_brightness_percent:
+          name: Brightness (1–100%)
+          description: |
+            Number indicating brightness at the peak of time.
+            1% = minimum brightness / 100% = maximum brightness.
+          default: 100
           selector:
             number:
-              min: 0
-              max: 255
+              min: 1
+              max: 100
               step: 1
-        i__peak_color_temp:
-          name: Color temperature (mireds)
+        i__peak_color_temp_kelvin:
+          name: Color temperature (kelvins)
           description: |
-            Number indicating color temperature in mireds at the peek of time.
-            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
-          default: 153
+            Number indicating color temperature in kelvins at the peak of time.
+            Higher color temperature [K] = colder white / Lower color temperature [K] = warmer white.
+            **Default:** 6500K (cool white)
+            **Note:** It may vary depending on the type of light. If you're unsure, enable debug mode and check the min_color_temp_kelvin and max_color_temp_kelvin values. Bad or exceeded values ​​may be ignored by the device and then it seems that the blueprint does not work properly.
+          default: 6500
           selector:
             color_temp:
-              unit: "mired"
-              min: 153
-              max: 500
+              unit: "kelvin"
+              min: 1200
+              max: 9000
 
     section_end_config:
       name: "## End parameters"
@@ -114,72 +171,89 @@ blueprint:
           default: "22:00:00"
           selector:
             time: {}
-        i__end_brightness:
-          name: Brightness (0–255)
+        i__end_brightness_percent:
+          name: Brightness (1–100%)
+          description: |
+            Number indicating brightness at the end of time.
+            1% = minimum brightness / 100% = maximum brightness.
           default: 1
           selector:
             number:
-              min: 0
-              max: 255
+              min: 1
+              max: 100
               step: 1
-        i__end_color_temp:
-          name: Color temperature (mireds)
+        i__end_color_temp_kelvin:
+          name: Color temperature (kelvins)
           description: |
-            Number indicating color temperature in mireds at the end of time.
-            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
-          default: 500
+            Number indicating color temperature in kelvins at the end of time.
+            Higher color temperature [K] = colder white / Lower color temperature [K] = warmer white.
+            **Default:** 2700K (warm white)
+            **Note:** It may vary depending on the type of light. If you're unsure, enable debug mode and check the min_color_temp_kelvin and max_color_temp_kelvin values. Bad or exceeded values ​​may be ignored by the device and then it seems that the blueprint does not work properly.
+          default: 2700
           selector:
             color_temp:
-              unit: "mired"
-              min: 153
-              max: 500
+              unit: "kelvin"
+              min: 1200
+              max: 9000
 
     section_other_config:
       name: "## Other parameters"
       icon: mdi:tune
       description: ""
-      collapsed: false
+      collapsed: true
       input:
         i__transition_step:
           name: Transition time (seconds)
-          default: 60
+          default: 45
           selector:
             number:
-              min: 1
-              max: 60
+              min: 0
+              max: 59
               step: 0.1
               unit_of_measurement: "seconds"
 
+mode: restart
+max_exceeded: silent
+
 trigger:
   - platform: time_pattern
-    minutes: "/1"
+    minutes: /1
 
 variables:
   v__debug_f: !input i__debug_f
-
+  v__days_of_week: !input i__days_of_week
   v__start_time: !input i__start_time
-  v__start_brightness: !input i__start_brightness
-  v__start_color_temp: !input i__start_color_temp
-
+  v__start_brightness_percent: !input i__start_brightness_percent
+  v__start_color_temp_kelvin: !input i__start_color_temp_kelvin
   v__peak_time: !input i__peak_time
   v__peak_time_end: !input i__peak_time_end
-  v__peak_brightness: !input i__peak_brightness
-  v__peak_color_temp: !input i__peak_color_temp
-
+  v__peak_brightness_percent: !input i__peak_brightness_percent
+  v__peak_color_temp_kelvin: !input i__peak_color_temp_kelvin
   v__end_time: !input i__end_time
-  v__end_brightness: !input i__end_brightness
-  v__end_color_temp: !input i__end_color_temp
+  v__end_brightness_percent: !input i__end_brightness_percent
+  v__end_color_temp_kelvin: !input i__end_color_temp_kelvin
   v__transition_step: !input i__transition_step
+  v__entity_id: !input i__entity_id
+  v__light_info: "{{ expand(v__entity_id) | map(attribute='attributes') | list }}"
 
-  v__light_target: !input i__light_target
-  v__light_is_on: >
-    {% set entity = v__light_target.entity_id if v__light_target.entity_id is defined else None %}
-    {% if entity %}
-      {{ is_state(entity, 'on') }}
+  # Current states
+  v__light_current_state_on: >
+    {% set entity_id = v__entity_id if v__entity_id is defined else None %}
+    {% if entity_id %}
+      {{ is_state(entity_id, 'on') }}
     {% else %}
       false
     {% endif %}
+  v__light_current_state_brightness: "{{ state_attr(v__entity_id, 'brightness') | tojson }}"
+  v__light_current_state_color_temp_kelvin: "{{ state_attr(v__entity_id, 'color_temp_kelvin') | tojson }}"
+  v__light_current_state_min_color_temp_kelvin: "{{ state_attr(v__entity_id, 'min_color_temp_kelvin') | tojson }}"
+  v__light_current_state_max_color_temp_kelvin: "{{ state_attr(v__entity_id, 'max_color_temp_kelvin') | tojson }}"
+  v__light_current_state_color_mode: "{{ state_attr(v__entity_id, 'color_mode') | tojson }}"
+  v__light_current_state_supported_color_modes: "{{ state_attr(v__entity_id, 'supported_color_modes') | tojson }}"
 
+  #Time calculations
+  v__day_of_week: "{{ now().strftime('%A') | lower }}"
+  v__is_active_day: "{{ v__day_of_week in v__days_of_week }}"
   v__now: "{{ now() | as_datetime }}"
   v__s_raw: "{{ today_at(v__start_time) | as_datetime }}"
   v__p_raw: "{{ today_at(v__peak_time) | as_datetime }}"
@@ -202,25 +276,28 @@ variables:
   v__peak_minutes: "{{ ((v__p | as_datetime - v__s | as_datetime ).total_seconds() / 60) | int }}"
   v__peak_end_minutes: "{{ ((v__pe | as_datetime - v__s | as_datetime ).total_seconds() / 60) | int }}"
 
-  v__brightness: >
+  v__brightness_percent: >
     {% if v__now < v__s or v__now >= v__e %}
-      {{ v__end_brightness }}
+      {{ v__end_brightness_percent }}
     {% elif v__minutes_since_start <= v__peak_minutes %}
-      {{ (v__start_brightness + (v__peak_brightness - v__start_brightness) * (v__minutes_since_start / v__peak_minutes)) | round(0) | int }}
+      {{ (v__start_brightness_percent + (v__peak_brightness_percent - v__start_brightness_percent) * (v__minutes_since_start / v__peak_minutes)) }}
     {% elif v__minutes_since_start <= v__peak_end_minutes %}
-      {{ v__peak_brightness }}
+      {{ v__peak_brightness_percent }}
     {% else %}
-      {{ (v__peak_brightness + (v__end_brightness - v__peak_brightness) * ((v__minutes_since_start - v__peak_end_minutes) / (v__total_minutes - v__peak_end_minutes))) | round(0) | int }}
+      {{ (v__peak_brightness_percent + (v__end_brightness_percent - v__peak_brightness_percent) * ((v__minutes_since_start - v__peak_end_minutes) / (v__total_minutes - v__peak_end_minutes))) }}
     {% endif %}
-  v__color_temp: >
+  v__brightness: >
+    {% set percent = [1, [v__brightness_percent, 100]|min]|max %}
+    {{ (percent * 2.55) | round(0) | int }}
+  v__color_temp_kelvin: >
     {% if v__now < v__s or v__now >= v__e %}
-      {{ v__end_color_temp }}
+      {{ v__end_color_temp_kelvin }}
     {% elif v__minutes_since_start <= v__peak_minutes %}
-      {{ (v__start_color_temp + (v__peak_color_temp - v__start_color_temp) * (v__minutes_since_start / v__peak_minutes)) | round(0) | int }}
+      {{ (v__start_color_temp_kelvin + (v__peak_color_temp_kelvin - v__start_color_temp_kelvin) * (v__minutes_since_start / v__peak_minutes)) | round(0) | int }}
     {% elif v__minutes_since_start <= v__peak_end_minutes %}
-      {{ v__peak_color_temp }}
+      {{ v__peak_color_temp_kelvin }}
     {% else %}
-      {{ (v__peak_color_temp + (v__end_color_temp - v__peak_color_temp) * ((v__minutes_since_start - v__peak_end_minutes) / (v__total_minutes - v__peak_end_minutes))) | round(0) | int }}
+      {{ (v__peak_color_temp_kelvin + (v__end_color_temp_kelvin - v__peak_color_temp_kelvin) * ((v__minutes_since_start - v__peak_end_minutes) / (v__total_minutes - v__peak_end_minutes))) | round(0) | int }}
     {% endif %}
 
 action:
@@ -234,61 +311,78 @@ action:
             data:
               title: "Parameters - config & entity"
               message: |
-                v__light_target: {{ v__light_target | tojson }}
-                v__light_is_on: {{ v__light_is_on }}
+                **Entity**
+                v__entity_id:    {{ v__entity_id | tojson }}
+                v__light_info:   {{ v__light_info }}
                 _____________________________________________________________
-                **Configuration:**
-                v__start_time: {{ v__start_time }}
-                v__peak_time: {{ v__peak_time }} 
-                v__end_time: {{ v__end_time }}
-                v__start_brightness: {{ v__start_brightness }}
-                v__peak_brightness: {{ v__peak_brightness }}
-                v__end_brightness: {{ v__end_brightness }}
-                v__start_color_temp: {{ v__start_color_temp }}
-                v__peak_color_temp: {{ v__peak_color_temp }}
-                v__end_color_temp: {{ v__end_color_temp }}
-                v__transition_step: {{ v__transition_step }}
+                **Configuration**
+                v__days_of_week:              {{ v__days_of_week }}
+                v__start_time:                {{ v__start_time }}
+                v__peak_time:                 {{ v__peak_time }} 
+                v__end_time:                  {{ v__end_time }}
+                v__start_brightness_percent:  {{ v__start_brightness_percent }}
+                v__peak_brightness_percent:   {{ v__peak_brightness_percent }}
+                v__end_brightness_percent:    {{ v__end_brightness_percent }}
+                v__start_color_temp_kelvin:   {{ v__start_color_temp_kelvin }}
+                v__peak_color_temp_kelvin:    {{ v__peak_color_temp_kelvin }}
+                v__end_color_temp_kelvin:     {{ v__end_color_temp_kelvin }}
+                v__transition_step:           {{ v__transition_step }}
                 _____________________________________________________________
-                v__now: {{ v__now }}
-                v__s: {{ v__s }}
-                v__p: {{ v__p }}  
-                v__e: {{ v__e }}
-                v__total_minutes: {{ v__total_minutes }}
+                **Current states (before execution)**             
+                v__light_current_state_on :                   {{ v__light_current_state_on }}
+                v__light_current_state_brightness:            {{ v__light_current_state_brightness }}
+                v__light_current_state_color_temp_kelvin:     {{ v__light_current_state_color_temp_kelvin }}
+                v__light_current_state_min_color_temp_kelvin: {{ v__light_current_state_min_color_temp_kelvin }}
+                v__light_current_state_max_color_temp_kelvin: {{ v__light_current_state_max_color_temp_kelvin }}
+                v__light_current_state_color_mode:            {{ v__light_current_state_color_mode }}
+                v__light_current_state_supported_color_modes: {{ v__light_current_state_supported_color_modes }}
+                _____________________________________________________________
+                **Calculations and new settings**
+                v__day_of_week:         {{ v__day_of_week }}
+                v__is_active_day:       {{ v__is_active_day }} 
+                v__now:                 {{ v__now }}
+                v__s:                   {{ v__s }}
+                v__p:                   {{ v__p }}  
+                v__e:                   {{ v__e }}
+                v__total_minutes:       {{ v__total_minutes }}
                 v__minutes_since_start: {{ v__minutes_since_start }}
-                v__peak_minutes: {{ v__peak_minutes }}
-                v__brightness: {{ v__brightness }}
-                v__color_temp: {{ v__color_temp }}
-
+                v__peak_minutes:        {{ v__peak_minutes }}
+                v__brightness_percent:  {{ v__brightness_percent }} 
+                v__brightness:          {{ v__brightness }}
+                v__color_temp_kelvin:   {{ v__color_temp_kelvin }}
   # Main lighting logic
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ v__now | as_datetime > v__e | as_datetime and v__light_is_on == true}}"
+            value_template: "{{ v__is_active_day and v__now | as_datetime > v__e | as_datetime and v__light_current_state_on  == true}}"
         sequence:
           - service: light.turn_off
-            target: "{{ v__light_target }}"
+            target:
+              entity_id: "{{ v__entity_id }}"
             data:
               transition: "{{v__transition_step}}"
+          - delay: "00:00:00.1"
+
       - conditions:
           - condition: template
-            value_template: "{{ v__now | as_datetime < v__s | as_datetime and v__light_is_on == true }}"
+            value_template: "{{ v__is_active_day and v__now | as_datetime < v__s | as_datetime and v__light_current_state_on  == true }}"
         sequence:
           - service: light.turn_off
-            target: "{{ v__light_target }}"
+            target:
+              entity_id: "{{ v__entity_id }}"
             data:
               transition: "{{v__transition_step}}"
+          - delay: "00:00:00.1"
+
       - conditions:
           - condition: template
-            value_template: "{{ v__s | as_datetime <= v__now | as_datetime and v__now | as_datetime < v__e | as_datetime }}"
+            value_template: "{{ v__is_active_day and v__s | as_datetime <= v__now | as_datetime and v__now | as_datetime < v__e | as_datetime }}"
         sequence:
           - service: light.turn_on
-            target: "{{ v__light_target }}"
+            target:
+              entity_id: "{{ v__entity_id }}"
             data:
-              brightness: "{{ v__brightness }}"
-              color_temp: "{{ v__color_temp }}"
+              brightness_pct: "{{ v__brightness_percent | int }}"
+              color_temp_kelvin: "{{ v__color_temp_kelvin | int }}"
               transition: "{{ v__transition_step }}"
-#    default:
-#      - service: light.turn_off
-#        target: "{{ v__light_target }}"
-#        data:
-#          transition: "{{v__transition_step}}"
+          - delay: "00:00:00.1"
