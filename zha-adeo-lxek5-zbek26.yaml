@@ -1,22 +1,24 @@
 variables:
-  entity_domain_options: &entity_domain_options #Dictionary of supported entities
+  entity_domain_options:
+    &entity_domain_options #Dictionary of supported entities
     - light
     - switch
     - fan
     - automation
     - scene
     - media_player
-    
-  entity_type_options: &entity_type_options #Dictionary of entity types that can be enforced
+
+  entity_type_options:
+    &entity_type_options #Dictionary of entity types that can be enforced
     - label: 0. Automatic (by entity domain and entity info)
-      value: AUTO 
+      value: AUTO
     - label: 1. Light with On/Off support only
       value: LIGHT_ONOFF
-    - label: 2. White light with adjustable brightness
-      value: LIGHT_BRIGHTNESS     
-    - label: 3. White light with adjustable temperature and brightness
+    - label: 2. White light with adjustable brightness only
+      value: LIGHT_BRIGHTNESS
+    - label: 3. White light with adjustable temperature and brightness only
       value: LIGHT_COLOR_TEMP
-    - label: 4. Color light with adjustable hue and saturation
+    - label: 4. Color (RGB) light with adjustable hue and saturation
       value: LIGHT_HS
     - label: 5. Switch with On/Off support only
       value: SWITCH
@@ -28,11 +30,12 @@ variables:
       value: SCENE
     - label: 9. Media player On/Off/VolumeUp/VolumeDown/Start/Stop/Pause
       value: MEDIA_PLAYER
-     
-  controller_actions: &controller_actions #Dictionary of actions/buttons on remote controller
+
+  controller_actions:
+    &controller_actions #Dictionary of actions/buttons on remote controller
     - label: "1. Turn on"
       value: TURN_ON
-    - label: "2. Turn off" 
+    - label: "2. Turn off"
       value: TURN_OFF
     - label: "3. Scene 1 (one square)"
       value: SCENE_1
@@ -41,7 +44,7 @@ variables:
     - label: "5. Scene 3 (three squares)"
       value: SCENE_3
     - label: "6. Scene 4 (four squares)"
-      value: SCENE_4        
+      value: SCENE_4
     - label: "7. Dim up (right up)"
       value: "DIM_UP"
     - label: "8. Dim up (right up - long press)"
@@ -53,11 +56,11 @@ variables:
     - label: "11. Color up (D-pad up with red LED)"
       value: "COLOR_UP"
     - label: "12. Color up (D-pad up with red LED - long press)"
-      value: "COLOR_UP_LP"  
+      value: "COLOR_UP_LP"
     - label: "13. Color down (D-pad down with red LED)"
       value: "COLOR_DOWN"
     - label: "14. Color down (D-pad down with red LED - long press)"
-      value: "COLOR_DOWN_LP"  
+      value: "COLOR_DOWN_LP"
     - label: "15. Saturation up (D-pad up with green LED)"
       value: "SATURATION_UP"
     - label: "16. Saturation up (D-pad up with green LED - long press)"
@@ -70,48 +73,52 @@ variables:
       value: "HUE_LEFT"
     - label: "20. Hue right (D-pad right with green LED)"
       value: "HUE_RIGHT"
-     
+
 blueprint:
-  name: SirYasko's LXEK-5/ZBEK-26 v2.1.2
+  name: SirYasko's LXEK-5/ZBEK-26 v2.2
   description: |
     Control various devices with the Adeo LXEK-5/ZBEK-26 (Leroy Merlin - Lexman) remote connected via ZHA 
     HR-C99C-Z-C045 - https://zigbee.blakadder.com/ADEO_HR-C99C-Z-C045.html
     ![Device Image](https://github.com/SirYasko/HA-Blueprints/raw/main/zha-adeo-lxek5-zbek26.png)
+
+    **Like what I do? Fuel my change with a coffee!**
+
+    [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/siryasko)
   source_url: https://github.com/SirYasko/HA-Blueprints/blob/main/zha-adeo-lxek5-zbek26.yaml
   domain: automation
   author: SirYasko
-  homeassistant: 
+  homeassistant:
     min_version: 2024.6.0
-  
+
   input:
     section_debug:
       name: "## Debugging and error detection"
       icon: mdi:bug-outline
       description: "Enable when you know what you're doing - helpful for error detection and debugging"
       collapsed: true
-      input: 
+      input:
         i__debug_f:
           name: (Required) Send debug notifications to HA
-          description: Disabled by default 
+          description: Disabled by default
           default: false
           selector:
             boolean:
-            
-        i__debug_button: 
+
+        i__debug_button:
           name: "Simulate a button press"
           description: ""
           selector:
-           select:
-              mode: dropdown 
+            select:
+              mode: dropdown
               options: *controller_actions
           default: null
-          
+
     section_entity_config:
       name: "## Entities configuration"
       icon: mdi:cog
       description: ""
       collapsed: false
-      input: 
+      input:
         i__remote:
           name: (Required) Adeo LXEK-5/ZBEK-26 remote controller
           description: Select the remote controller you wish to use.
@@ -122,53 +129,53 @@ blueprint:
                   model: LXEK-5
                 - integration: zha
                   model: ZBEK-26
-        
+
         i__entity_helper:
           name: (Required) Helper
           description: |
             Select a helper to store the currently selected entity: 
             - expand the dropdown and choose 'Create a new Text helper' (if available) or click [link](https://my.home-assistant.io/redirect/helpers/) or go to Settings -> Devices & Services -> Helpers
-            - add new text helper (name: any, icon: any, min length: 0, max length: 255, mode: text, pattern regex: empty).      
+            - add new text helper (name: any, icon: any, min length: 0, max length: 255, mode: text, pattern regex: empty).
           selector:
             entity:
               domain:
                 - input_text
               multiple: false
-        
+
         i__entity_1:
           name: "(Optional) Entity for [scene 1] button"
           description: |
-            &#x25A0; 
+            &#x25A0;
           selector:
             entity:
               domain: *entity_domain_options
               multiple: false
           default: null
-        
+
         i__entity_2:
-          name: '(Optional) Entity for [scene 2] button'
+          name: "(Optional) Entity for [scene 2] button"
           description: |
             &#x25A0; 
-            &#x25A0; 
+            &#x25A0;
           selector:
             entity:
               domain: *entity_domain_options
               multiple: false
           default: null
-        
+
         i__entity_3:
-          name: '(Optional) Entity for [scene 3] button'
+          name: "(Optional) Entity for [scene 3] button"
           description: |
             &#x25A0;&nbsp;&ensp;&#x25A0;
-            &#x25A0;        
+            &#x25A0;
           selector:
             entity:
               domain: *entity_domain_options
               multiple: false
           default: null
-        
+
         i__entity_4:
-          name: '(Optional) Entity for [scene 4] button'
+          name: "(Optional) Entity for [scene 4] button"
           description: |
             &#x25A0;&nbsp;&ensp;&#x25A0;
             &#x25A0;&nbsp;&ensp;&#x25A0;
@@ -183,50 +190,49 @@ blueprint:
       icon: mdi:hammer-wrench
       description: ""
       collapsed: true
-      input: 
+      input:
         i__entity_type_1:
-          name: '(Optional) Force type of entity for [scene 1] button'
+          name: "(Optional) Force type of entity for [scene 1] button"
           description: 'Force the type of selected entity - use when "0. Automatic" does not work'
           selector:
             select:
-              mode: dropdown 
+              mode: dropdown
               options: *entity_type_options
           default: AUTO
-          
+
         i__entity_type_2:
-          name: '(Optional) Force type of entity for [scene 2] button'
+          name: "(Optional) Force type of entity for [scene 2] button"
           description: 'Force the type of selected entity - use when "0. Automatic" does not work'
           selector:
             select:
-              mode: dropdown 
+              mode: dropdown
               options: *entity_type_options
           default: AUTO
-          
+
         i__entity_type_3:
-          name: '(Optional) Force type of entity for [scene 3] button'
+          name: "(Optional) Force type of entity for [scene 3] button"
           description: 'Force the type of selected entity - use when "0. Automatic" does not work'
           selector:
             select:
-              mode: dropdown 
+              mode: dropdown
               options: *entity_type_options
           default: AUTO
-        
+
         i__entity_type_4:
-          name: '(Optional) Force type of entity for [scene 4] button'
+          name: "(Optional) Force type of entity for [scene 4] button"
           description: 'Force the type of selected entity - use when "0. Automatic" does not work'
           selector:
             select:
-              mode: dropdown 
+              mode: dropdown
               options: *entity_type_options
           default: AUTO
-        
 
     section_light_brightness:
       name: "## Lights - brightness"
       icon: mdi:brightness-6
       description: ""
-      collapsed: true     
-      input: 
+      collapsed: true
+      input:
         i__brightness_step:
           name: (Optional) Brightness step
           description: Brightness change step.
@@ -235,8 +241,8 @@ blueprint:
             number:
               min: 1
               max: 255
-              step: 1 
-              
+              step: 1
+
         i__brightness_min:
           name: (Optional) Minimum brightness value
           description: Number indicating minimum brightness, where 0 turns the light off, 1 is the minimum brightness, and 255 is the maximum brightness.
@@ -245,8 +251,8 @@ blueprint:
             number:
               min: 0
               max: 255
-              step: 1 
-        
+              step: 1
+
         i__brightness_max:
           name: (Optional) Maximum brightness value
           description: Number indicating maximum brightness, where 0 turns the light off, 1 is the minimum brightness, and 255 is the maximum brightness.
@@ -255,22 +261,22 @@ blueprint:
             number:
               min: 0
               max: 255
-              step: 1 
-    
+              step: 1
+
         i__brightness_double_on:
           name: (Optional) Set maximum brightness on double on.
           description: Set the brightness (maximum brightness value) when the light is already turned on and turned on again.
           default: true
           selector:
             boolean:
-        
+
         i__brightness_double_off:
           name: (Optional) Set minimum brightness on double off.
           description: Set the brightness (minimum brightness value) when the light is already turned off and turned off on again.
           default: true
           selector:
             boolean:
-            
+
         i__brightness_transition_time:
           name: (Optional) Brightness transition time
           description: Duration it takes to get to next state.
@@ -279,16 +285,16 @@ blueprint:
             number:
               min: 0
               max: 60
-              step: 0.1          
+              step: 0.1
               unit_of_measurement: "seconds"
-        
+
         i__brightness_force:
           name: (Optional) Force brightness value at turn on
           description: Force brightness value when the light is being turned on.
           default: false
           selector:
             boolean:
-            
+
         i__brightness_force_value:
           name: (Optional) Force brightness value
           description: Brightness value to force when turning on the light.
@@ -299,60 +305,60 @@ blueprint:
               max: 255
               step: 1
               mode: slider
-        
-    #COLOR TEMPERATURE   
+
+    #COLOR TEMPERATURE
     section_light_color_temp:
       name: "## Lights - color temperature"
       icon: mdi:sun-thermometer-outline
       description: ""
-      collapsed: true     
-      input:           
+      collapsed: true
+      input:
         i__color_step:
           name: (Optional) Color temperature step
-          description: Color temperature change step in mireds.
-          default: 25
+          description: Color temperature change step in kelvins.
+          default: 400
           selector:
             number:
               min: 1
-              max: 347
-              unit_of_measurement: "mireds"
-        
+              max: 12000
+              unit_of_measurement: "kelvin"
+
         i__color_step_long_press:
           name: (Optional) Color temperature step when long press used
-          description: Color temperature change step when long press is used in mireds.
-          default: 25
+          description: Color temperature change step when long press is used in kelvins.
+          default: 400
           selector:
             number:
               min: 1
-              max: 347
-              unit_of_measurement: "mireds"
-        
+              max: 1200
+              unit_of_measurement: "kelvin"
+
         i__color_min:
           name: (Optional) Minimum color temperature value
           description: |
-            Number indicating minimum color temperature in mireds.
-            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
-            If the "min_mireds" attribute is provided by light, the system takes the larger one as the minimum value. 
-          default: 153
+            Number indicating minimum color temperature in kelvins.
+            Higher temperature [K] = colder white = higher  / Lower temperature [K] = warmer white.
+            If the "min_color_temp_kelvin" attribute is provided by light, the system takes the larger one as the minimum value.
+          default: 1200
           selector:
             color_temp:
-              min: 153
-              max: 500
-              unit: "mired" 
-              
+              min: 1200
+              max: 9000
+              unit: "kelvin"
+
         i__color_max:
           name: (Optional) Maximum color temperature value
           description: |
-            Number indicating maximum color temperature in mireds. 
-            Lower value = colder white = higher temperature [K] / Higher value = warmer white = lower temperature [K].
-            If the "max_mireds" attribute is provided by light, the system takes the smaller one as the maximum value. 
-          default: 500
+            Number indicating maximum color temperature in kelvins. 
+                Higher temperature [K] = colder white = higher  / Lower temperature [K] = warmer white.
+            If the "max_color_temp_kelvin" attribute is provided by light, the system takes the smaller one as the maximum value.
+          default: 9000
           selector:
             color_temp:
-              min: 153
-              max: 500
-              unit: "mired" 
-            
+              min: 1200
+              max: 9000
+              unit: "kelvin"
+
         i__color_transition_time:
           name: (Optional) Color transition time
           description: Duration it takes to get to next state.
@@ -361,33 +367,33 @@ blueprint:
             number:
               min: 0
               max: 60
-              step: 0.1          
+              step: 0.1
               unit_of_measurement: "seconds"
-        
+
         i__color_force:
           name: (Optional) Force color temperature value at turn on
           description: Force color temperature value when the light is being turned on.
           default: false
           selector:
             boolean:
-            
+
         i__color_force_value:
           name: (Optional) Force color temperature value at turn on
-          description: Color temperature when turning on the light in mireds.
-          default: 326
+          description: Color temperature when turning on the light in kelvins.
+          default: 2700
           selector:
             color_temp:
-              min: 153
-              max: 500
-              unit: "mired"
-        
+              min: 1200
+              max: 9000
+              unit: "kelvin"
+
     #HUE / SATURATION
     section_light_hs:
       name: "## Lights - hue and saturation"
       icon: mdi:palette-outline
       description: ""
-      collapsed: true     
-      input:   
+      collapsed: true
+      input:
         i__hue_step:
           name: (Optional) Hue Step
           description: "Hue change step."
@@ -397,7 +403,7 @@ blueprint:
               min: 1
               max: 360
               unit_of_measurement: "degrees"
-        
+
         i__hue_transition_time:
           name: (Optional) Hue transition time
           description: Duration it takes to get to next state.
@@ -406,9 +412,9 @@ blueprint:
             number:
               min: 0
               max: 60
-              step: 0.1          
+              step: 0.1
               unit_of_measurement: "seconds"
-        
+
         i__saturation_step:
           name: (Optional) Saturation Step
           description: "Saturation change step."
@@ -417,8 +423,8 @@ blueprint:
             number:
               min: 1
               max: 100
-              unit_of_measurement: "percent"    
-        
+              unit_of_measurement: "percent"
+
         i__saturation_transition_time:
           name: (Optional) Saturation transition time
           description: Duration it takes to get to next state.
@@ -427,16 +433,16 @@ blueprint:
             number:
               min: 0
               max: 60
-              step: 0.1          
+              step: 0.1
               unit_of_measurement: "seconds"
-        
+
     # FAN
     section_fans:
       name: "## Fans"
       icon: mdi:fan
       description: ""
       collapsed: true
-      input:   
+      input:
         i__fan_speed_min:
           name: (Optional) Minimum fan speed value
           description: Number indicating minimum fan speed, where 0 turns the fan off, 1 is the minimum speed, and 100 is the maximum speed.
@@ -445,8 +451,8 @@ blueprint:
             number:
               min: 0
               max: 100
-              step: 1 
-        
+              step: 1
+
         i__fan_speed_max:
           name: (Optional) Maximum fan speed value
           description: Number indicating maximum fan speed, where 0 turns the fan off, 1 is the minimum speed, and 100 is the maximum speed.
@@ -455,8 +461,8 @@ blueprint:
             number:
               min: 0
               max: 100
-              step: 1 
-              
+              step: 1
+
         i__fan_speed_increase_step:
           name: (Optional) Increasing fan speed by a percentage step
           description: Increase speed by a percentage step.
@@ -466,8 +472,8 @@ blueprint:
               min: 0
               max: 100
               step: 1
-              unit_of_measurement: "percent"   
-        
+              unit_of_measurement: "percent"
+
         i__fan_speed_decrease_step:
           name: (Optional) Decreasing fan speed by a percentage step
           description: Decrease speed by a percentage step.
@@ -477,15 +483,15 @@ blueprint:
               min: 0
               max: 100
               step: 1
-              unit_of_measurement: "percent"   
-        
+              unit_of_measurement: "percent"
+
     # AUTOMATION
     section_automation:
       name: "## Automations"
       icon: mdi:home-automation
       description: ""
       collapsed: true
-      input:        
+      input:
         i__automation_trigger_button:
           name: Select the button that triggers the automation
           description: |
@@ -493,561 +499,451 @@ blueprint:
             Be aware of conflicts with default button assignments.
           selector:
             select:
-              mode: dropdown 
+              mode: dropdown
               options: *controller_actions
           default: null
 mode: restart
 max_exceeded: silent
-    
-variables:
-  v__debug_f:                    !input i__debug_f
-  v__debug_button:               !input i__debug_button
-  v__entity_helper:              !input i__entity_helper 
-  v__entity_1:                   !input i__entity_1
-  v__entity_2:                   !input i__entity_2
-  v__entity_3:                   !input i__entity_3
-  v__entity_4:                   !input i__entity_4
-  v__entity_type_1:              !input i__entity_type_1  
-  v__entity_type_2:              !input i__entity_type_2
-  v__entity_type_3:              !input i__entity_type_3 
-  v__entity_type_4:              !input i__entity_type_4 
-  # LIGHT BRIGHTNESS
-  v__brightness_step:            !input i__brightness_step
-  v__brightness_min:             !input i__brightness_min
-  v__brightness_max:             !input i__brightness_max
-  v__brightness_double_on:       !input i__brightness_double_on
-  v__brightness_double_off:      !input i__brightness_double_off
-  v__brightness_transition_time: !input i__brightness_transition_time
-  v__brightness_force:           !input i__brightness_force
-  v__brightness_force_value:     !input i__brightness_force_value
-  # LIGHT COLOR TEMPERATURE
-  v__color_step:                 !input i__color_step
-  v__color_step_long_press:      !input i__color_step_long_press
-  v__color_min:                  !input i__color_min
-  v__color_max:                  !input i__color_max
-  v__color_transition_time:      !input i__color_transition_time
-  v__color_force:                !input i__color_force
-  v__color_force_value:          !input i__color_force_value
-  # LIGHT HS
-  v__hue_step:                   !input i__hue_step
-  v__hue_transition_time:        !input i__hue_transition_time
-  v__saturation_step:            !input i__saturation_step
-  v__saturation_transition_time: !input i__saturation_transition_time
-  # FAN
-  v__fan_speed_min:              !input i__fan_speed_min
-  v__fan_speed_max:              !input i__fan_speed_max
-  v__fan_speed_increase_step:    !input i__fan_speed_increase_step
-  v__fan_speed_decrease_step:   !input i__fan_speed_decrease_step
-  # AUTOMATION
-  v__automation_trigger_button:  !input i__automation_trigger_button
-  
-trigger:
-- platform: event
-  event_type: zha_event
-  event_data:
-    device_id: !input i__remote
-    
-action:
-- variables:
-    v__event:           '{% if trigger.event is defined %} {{trigger.event}} {% endif %}'
-    v__command:         '{% if trigger.event is defined %} {{trigger.event.data.command}} {% elif v__debug_button is not none %} debug_button {% endif %}'
-    v__command_args0:   '{% if trigger.event is defined %} {{trigger.event.data.args[0]}} {% elif v__debug_button is not none %} debug_args0  {% endif %}'
-    v__command_args1:   '{% if trigger.event is defined %} {{trigger.event.data.args[1]}} {% elif v__debug_button is not none %} debug_args1  {% endif %}'
-    v__button_pressed: >
-      {% if   v__command == "debug_button"             and v__command_args0 == "debug_args0"   and v__command_args1 == "debug_args1" %} {{ v__debug_button }}
-      {% elif v__command == "on"                       and v__command_args0 | length == 0      and v__command_args1 | length == 0 %} TURN_ON
-      {% elif v__command == "off"                      and v__command_args0 | length == 0      and v__command_args1 | length == 0 %} TURN_OFF
-      {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 10         %} SCENE_1
-      {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 11         %} SCENE_2
-      {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 12         %} SCENE_3
-      {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 13         %} SCENE_4
-      {% elif v__command == "step"                     and v__command_args0 == "StepMode.Up"   and v__command_args1 == 26         %} DIM_UP
-      {% elif v__command == "step"                     and v__command_args0 == "StepMode.Up"   and v__command_args1 == 254        %} DIM_UP_LP
-      {% elif v__command == "step"                     and v__command_args0 == "StepMode.Down" and v__command_args1 == 26         %} DIM_DOWN
-      {% elif v__command == "step"                     and v__command_args0 == "StepMode.Down" and v__command_args1 == 254        %} DIM_DOWN_LP
-      {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 31         %} COLOR_UP
-      {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 301        %} COLOR_UP_LP
-      {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 31         %} COLOR_DOWN
-      {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 301        %} COLOR_DOWN_LP
-      {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 26         %} SATURATION_UP
-      {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 254        %} SATURATION_UP_LP
-      {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 26         %} SATURATION_DOWN
-      {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 254        %} SATURATION_DOWN_LP
-      {% elif v__command == "step_hue"                 and v__command_args0 == "StepMode.Down" and v__command_args1 == 22         %} HUE_LEFT
-      {% elif v__command == "step_hue"                 and v__command_args0 == "StepMode.Up"   and v__command_args1 == 22         %} HUE_RIGHT
-      {% elif v__command in ("stop", "stop_move_step") and v__command_args0 == 0               and v__command_args1 == 0          %} STOP
-      {% else %}                                                                                                                     UNKNOWN
-      {% endif %}  
-    v__entity_first: >
-      {% set first_entity = None %}
-      {% if v__entity_1 is not none %}{% set first_entity = v__entity_1 %}
-      {% elif v__entity_2 is not none %}{% set first_entity = v__entity_2 %}
-      {% elif v__entity_3 is not none %}{% set first_entity = v__entity_3 %}
-      {% elif v__entity_4 is not none %}{% set first_entity = v__entity_4 %}
-      {% endif %}
-      {{ ({"entity": first_entity, "type":"AUTO"}) | tojson }}
-    v__entity_JSON: >
-      {% if states(v__entity_helper) != 'unknown' and states(v__entity_helper) | regex_match('^\\{.*\\}$') %}
-        {{ states(v__entity_helper) | from_json }}
-      {% elif v__entity_first | regex_match('^\\{.*\\}$') %}
-        {{ v__entity_first }}
-      {% else %}
-        {{ {"entity": None, "type": "AUTO"} }}
-      {% endif %}
-    v__entity:          '{{ v__entity_JSON.entity }}' 
-    v__entity_info:     '{{ expand(v__entity) }}'
-    v__entity_domain:   >
-      {% if v__entity is not none and "." in v__entity %}
-        {{ v__entity.split(".")[0] }}
-      {% else %}
-        'unknown'
-      {% endif %}  
-    v__entity_type_selected: '{{ v__entity_JSON.type }}'      
-    v__entity_type: >   
-      {% if v__entity_type_selected == "AUTO" %}  
-        {{ v__entity_domain | upper }} 
-      {% else %}
-        {{ v__entity_type_selected | upper }}
-      {% endif %}      
-    
-# DEBUG  
-- choose:
-  - conditions:
-    - condition: template
-      value_template: '{{ v__debug_f == true }}' 
-    sequence:
-      - service: persistent_notification.create
-        data:
-          title: 'Parameters - config & entity'
-          message: |
-             v__event:                       {{v__event                      }};
-             v__command:                     {{v__command                    }}; 
-             v__command_args0:               {{v__command_args0              }}; 
-             v__command_args1:               {{v__command_args1              }};
-             v__button_pressed:              {{v__button_pressed             }};
-             _________________________________________________________________
-             v__entity_1:                    {{v__entity_1                   }}; 
-             v__entity_2:                    {{v__entity_2                   }}; 
-             v__entity_3:                    {{v__entity_3                   }}; 
-             v__entity_4:                    {{v__entity_4                   }}; 
-             v__entity_type_1:               {{v__entity_type_1              }};  
-             v__entity_type_2:               {{v__entity_type_2              }};
-             v__entity_type_3:               {{v__entity_type_3              }}; 
-             v__entity_type_4:               {{v__entity_type_4              }}; 
-             _________________________________________________________________
-             v__entity_first:                {{v__entity_first               }};
-             v__entity_JSON:                 {{v__entity_JSON                }};   
-             v__entity:                      {{v__entity                     }}; 
-             v__entity_domain:               {{v__entity_domain              }};
-             v__entity_type_selected:        {{v__entity_type_selected       }}; 
-             v__entity_type:                 {{v__entity_type                }};
-             v__entity_info:                 {{v__entity_info                }};
-            
-- choose:
-#####################################################        
-# ENTITIES                                          #
-#####################################################
-  - conditions:  
-    - condition: template
-      value_template: '{{ v__command == "view" and ( (v__button_pressed == "SCENE_1" and v__entity_1 is not none ) or (v__button_pressed == "SCENE_2" and v__entity_2 is not none) or (v__button_pressed == "SCENE_3" and v__entity_3 is not none) or (v__button_pressed == "SCENE_4" and v__entity_4 is not none) ) }}'
-    sequence:
-      - choose: 
-       
-        - conditions: #SCENE_1
-          - condition: template
-            value_template: '{{ v__button_pressed == "SCENE_1" and v__entity_1 is not none }}'
-          sequence:
-            - service: input_text.set_value
-              data:
-                entity_id: '{{ v__entity_helper }}'
-                value: '{{ {"entity": v__entity_1, "type": v__entity_type_1} | tojson }}'
-       
-        - conditions: #SCENE_2
-          - condition: template
-            value_template: '{{ v__button_pressed == "SCENE_2" and v__entity_2 is not none }}'
-          sequence:
-            - service: input_text.set_value
-              data:
-                entity_id: '{{ v__entity_helper }}'
-                value: '{{ {"entity": v__entity_2, "type": v__entity_type_2} | tojson }}'
-       
-        - conditions: #SCENE_3
-          - condition: template
-            value_template: '{{ v__button_pressed == "SCENE_3" and v__entity_3 is not none }}'
-          sequence:
-            - service: input_text.set_value
-              data:
-                entity_id: '{{ v__entity_helper }}'
-                value: '{{ {"entity": v__entity_3, "type": v__entity_type_3} | tojson }}'
-       
-        - conditions: #SCENE_4 
-          - condition: template
-            value_template: '{{ v__button_pressed == "SCENE_4" and v__entity_4 is not none }}'
-          sequence:
-            - service: input_text.set_value
-              data:
-                entity_id: '{{ v__entity_helper }}'
-                value: '{{ {"entity": v__entity_4, "type": v__entity_type_4} | tojson }}'
-      
-#####################################################
-# LIGHTS                                            #
-#####################################################
-  - conditions:  
-    - condition: template
-      value_template: '{{ v__entity_type.startswith("LIGHT") }}'
-    sequence:
-     - variables:
-        v__light_supported_color_modes: >
-          {% set entity_id = v__entity %}
-          {% if v__entity_type == "LIGHT" %}
-            {% set modes = state_attr(entity_id, 'supported_color_modes') %}
-            {% if modes %}
-              {% set modes_list = modes | map(attribute='value') | list %}
-              [{{ modes_list | map('string') | join(', ') }}]
-            {% else %} []
-            {% endif %}
-          {% elif v__entity_type == "LIGHT_ONOFF" %} [onoff]
-          {% elif v__entity_type == "LIGHT_BRIGHTNESS" %} [brightness]
-          {% elif v__entity_type == "LIGHT_COLOR_TEMP" %} [color_temp]
-          {% elif v__entity_type == "LIGHT_HS" %} [xy, hs]
-          {% else %} []
-          {% endif %}
-        v__light_current_brightness:  '{{ state_attr(v__entity, "brightness")  or 0 }}' 
-        v__light_current_color_temp:  '{{ state_attr(v__entity, "color_temp")  or 0 }}'
-        v__light_current_hue:         '{{ state_attr(v__entity, "hs_color")[0] or 0 }}'
-        v__light_current_saturation:  '{{ state_attr(v__entity, "hs_color")[1] or 0 }}'   
-        v__light_current_min_mireds:  '{{ state_attr(v__entity, "min_mireds")  or 0 }}'
-        v__light_current_max_mireds:  '{{ state_attr(v__entity, "max_mireds")  or 0 }}'        
-        v__color_min: >
-          {% if v__light_current_min_mireds > 0 %}
-            {{ [v__color_min, v__light_current_min_mireds] | max }}
-          {% else %}
-            {{ v__color_min }}
-          {% endif %}
-        v__color_max: >
-          {% if v__light_current_max_mireds > 0 %}
-            {{ [v__color_max, v__light_current_max_mireds] | min }}
-          {% else %}
-            {{ v__color_max }}
-          {% endif %}  
-     - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ v__debug_f == true }}'
-          sequence:
-            - service: persistent_notification.create
-              data:
-                title: 'Parameters - current values'
-                message: |
-                  v__light_supported_color_modes: {{ v__light_supported_color_modes }};
-                  v__light_current_brightness:    {{ v__light_current_brightness    }};
-                  v__light_current_color_temp:    {{ v__light_current_color_temp    }};
-                  v__light_current_hue:           {{ v__light_current_hue           }};
-                  v__light_current_saturation:    {{ v__light_current_saturation    }};
-                  v__light_current_min_mireds:    {{ v__light_current_min_mireds    }};
-                  v__light_current_max_mireds:    {{ v__light_current_max_mireds    }};
-     - choose:    
-        #ON / OFF
-        - conditions: #ON 
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_ON" and ["color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-          - variables:     
-              v__off_brightness: '{{ state_attr(v__entity, "off_brightness")  or 0 }}' 
-              v__new_brightness: >
-                {% if v__brightness_force and v__light_current_brightness == 0  %}     {{ v__brightness_force_value | int }} 
-                {% elif v__brightness_double_on and v__light_current_brightness > 0%}  {{ v__brightness_max | int }} 
-                {% elif v__off_brightness > 0 %}                                       {{ v__off_brightness | int }} 
-                {% else %} none 
-                {% endif %}
-              v__new_color_temp: '{% if v__color_force %} {{ v__color_force_value | int }} {% else %} none {% endif %}'
-              v__new_transition: '{% if v__brightness_transition_time %} {{ v__brightness_transition_time }} {% else %} none {% endif %}' 
-              v__data: >
-                {
-                {% if v__new_brightness | is_number %}
-                "brightness": "{{ v__new_brightness }}",
-                {% endif %}
-                {% if v__new_color_temp | is_number %}
-                "color_temp": "{{ v__new_color_temp }}",
-                {% endif %}
-                {% if v__new_transition | is_number %}
-                "transition": "{{ v__new_transition }}",
-                {% endif %}
-                }
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: '{{ v__debug_f == true }}'
-                sequence:
-                  - service: persistent_notification.create
-                    data:
-                      title: 'Parameters - new values'
-                      message: |
-                        v__new_brightness: {{ v__new_brightness }},
-                        v__new_color_temp: {{ v__new_color_temp }},
-                        v__new_transition: {{ v__new_transition }},
-                        v__data:           {{ v__data }} 
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-             entity_id: '{{ v__entity }}'
-            data: '{{ v__data }}'
-      
-        - conditions: #ON 
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_ON"  }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-             entity_id: '{{ v__entity }}'       
-       
-        - conditions: #OFF - off when brightness > 0
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_OFF" and ["color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 and (state_attr(v__entity, "brightness") or 0 ) | int > 0 }}'
-          sequence:
-          - service: light.turn_off
-            target:
-              entity_id: '{{ v__entity }}'
-      
-        - conditions: #OFF - on when double off
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_OFF" and ["color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 and (state_attr(v__entity, "brightness") or 0 ) | int == 0 and v__brightness_double_off == true }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              brightness: '{{ v__brightness_min }}'
-      
-        - conditions: #OFF 
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_OFF" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_off'
-            target:
-              entity_id: '{{ v__entity }}' 
 
-        #BRIGHTNESS
-        - conditions: #DIM_UP - increase light brightness 
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input i__remote
+
+action:
+  - variables:
+      v__debug_f: !input i__debug_f
+      v__debug_button: !input i__debug_button
+      v__entity_helper: !input i__entity_helper
+      v__entity_1: !input i__entity_1
+      v__entity_2: !input i__entity_2
+      v__entity_3: !input i__entity_3
+      v__entity_4: !input i__entity_4
+      v__entity_type_1: !input i__entity_type_1
+      v__entity_type_2: !input i__entity_type_2
+      v__entity_type_3: !input i__entity_type_3
+      v__entity_type_4: !input i__entity_type_4
+      # LIGHT BRIGHTNESS
+      v__brightness_step: !input i__brightness_step
+      v__brightness_min: !input i__brightness_min
+      v__brightness_max: !input i__brightness_max
+      v__brightness_double_on: !input i__brightness_double_on
+      v__brightness_double_off: !input i__brightness_double_off
+      v__brightness_transition_time: !input i__brightness_transition_time
+      v__brightness_force: !input i__brightness_force
+      v__brightness_force_value: !input i__brightness_force_value
+      # LIGHT COLOR TEMPERATURE
+      v__color_step: !input i__color_step
+      v__color_step_long_press: !input i__color_step_long_press
+      v__color_min: !input i__color_min
+      v__color_max: !input i__color_max
+      v__color_transition_time: !input i__color_transition_time
+      v__color_force: !input i__color_force
+      v__color_force_value: !input i__color_force_value
+      # LIGHT HS
+      v__hue_step: !input i__hue_step
+      v__hue_transition_time: !input i__hue_transition_time
+      v__saturation_step: !input i__saturation_step
+      v__saturation_transition_time: !input i__saturation_transition_time
+      # FAN
+      v__fan_speed_min: !input i__fan_speed_min
+      v__fan_speed_max: !input i__fan_speed_max
+      v__fan_speed_increase_step: !input i__fan_speed_increase_step
+      v__fan_speed_decrease_step: !input i__fan_speed_decrease_step
+      # AUTOMATION
+      v__automation_trigger_button: !input i__automation_trigger_button
+
+      # DERIVED VARIABLES
+      v__event: "{% if trigger.event is defined %} {{trigger.event}} {% endif %}"
+      v__command: "{% if trigger.event is defined %} {{trigger.event.data.command}} {% elif v__debug_button is not none %} debug_button {% endif %}"
+      v__command_args0: "{% if trigger.event is defined and trigger.event.data.args is defined and (trigger.event.data.args | length) > 0 %} {{ trigger.event.data.args[0] }} {% elif v__debug_button is not none %} debug_args0 {% else %} {% endif %}"
+      v__command_args1: "{% if trigger.event is defined and trigger.event.data.args is defined and (trigger.event.data.args | length) > 1 %} {{ trigger.event.data.args[1] }} {% elif v__debug_button is not none %} debug_args1 {% else %} {% endif %}"
+      v__button_pressed: >
+        {% if   v__command == "debug_button"             and v__command_args0 == "debug_args0"   and v__command_args1 == "debug_args1" %} {{ v__debug_button }}
+        {% elif v__command == "on"                       and v__command_args0 | length == 0      and v__command_args1 | length == 0 %} TURN_ON
+        {% elif v__command == "off"                      and v__command_args0 | length == 0      and v__command_args1 | length == 0 %} TURN_OFF
+        {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 10         %} SCENE_1
+        {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 11         %} SCENE_2
+        {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 12         %} SCENE_3
+        {% elif v__command == "view"                     and v__command_args0 == 0               and v__command_args1 == 13         %} SCENE_4
+        {% elif v__command == "step"                     and v__command_args0 == "StepMode.Up"   and v__command_args1 == 26         %} DIM_UP
+        {% elif v__command == "step"                     and v__command_args0 == "StepMode.Up"   and v__command_args1 == 254        %} DIM_UP_LP
+        {% elif v__command == "step"                     and v__command_args0 == "StepMode.Down" and v__command_args1 == 26         %} DIM_DOWN
+        {% elif v__command == "step"                     and v__command_args0 == "StepMode.Down" and v__command_args1 == 254        %} DIM_DOWN_LP
+        {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 31         %} COLOR_UP
+        {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 301        %} COLOR_UP_LP
+        {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 31         %} COLOR_DOWN
+        {% elif v__command == "step_color_temp"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 301        %} COLOR_DOWN_LP
+        {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 26         %} SATURATION_UP
+        {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Up"   and v__command_args1 == 254        %} SATURATION_UP_LP
+        {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 26         %} SATURATION_DOWN
+        {% elif v__command == "step_saturation"          and v__command_args0 == "StepMode.Down" and v__command_args1 == 254        %} SATURATION_DOWN_LP
+        {% elif v__command == "step_hue"                 and v__command_args0 == "StepMode.Down" and v__command_args1 == 22         %} HUE_LEFT
+        {% elif v__command == "step_hue"                 and v__command_args0 == "StepMode.Up"   and v__command_args1 == 22         %} HUE_RIGHT
+        {% elif v__command in ("stop", "stop_move_step") and v__command_args0 == 0               and v__command_args1 == 0          %} STOP
+        {% else %}                                                                                                                     UNKNOWN
+        {% endif %}
+      v__entity_first: >
+        {% set first_entity = None %}
+        {% if v__entity_1 is not none %}{% set first_entity = v__entity_1 %}
+        {% elif v__entity_2 is not none %}{% set first_entity = v__entity_2 %}
+        {% elif v__entity_3 is not none %}{% set first_entity = v__entity_3 %}
+        {% elif v__entity_4 is not none %}{% set first_entity = v__entity_4 %}
+        {% endif %}
+        {{ ({"entity": first_entity, "type":"AUTO"}) | tojson }}
+      v__entity_JSON: >
+        {% if states(v__entity_helper) != 'unknown' and states(v__entity_helper) | regex_match('^\\{.*\\}$') %}
+          {{ states(v__entity_helper) | from_json }}
+        {% elif v__entity_first | regex_match('^\\{.*\\}$') %}
+          {{ v__entity_first }}
+        {% else %}
+          {{ {"entity": None, "type": "AUTO"} }}
+        {% endif %}
+      v__entity: "{{ v__entity_JSON.entity }}"
+      v__entity_info: "{{ expand(v__entity) }}"
+      v__entity_domain: >
+        {% if v__entity is not none and "." in v__entity %}
+          {{ v__entity.split(".")[0] }}
+        {% else %}
+          'unknown'
+        {% endif %}
+      v__entity_type_selected: "{{ v__entity_JSON.type }}"
+      v__entity_type: >
+        {% if v__entity_type_selected == "AUTO" %}  
+          {{ v__entity_domain | upper }} 
+        {% else %}
+          {{ v__entity_type_selected | upper }}
+        {% endif %}
+
+  # DEBUG
+  - choose:
+      - conditions:
           - condition: template
-            value_template: '{{ v__button_pressed == "DIM_UP"  and ["color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
+            value_template: "{{ v__debug_f == true }}"
+        sequence:
+          - service: persistent_notification.create
+            data:
+              title: "Parameters - config & entity"
+              message: |
+                v__event:                       {{v__event                      }};
+                v__command:                     {{v__command                    }}; 
+                v__command_args0:               {{v__command_args0              }}; 
+                v__command_args1:               {{v__command_args1              }};
+                v__button_pressed:              {{v__button_pressed             }};
+                _________________________________________________________________
+                v__entity_1:                    {{v__entity_1                   }}; 
+                v__entity_2:                    {{v__entity_2                   }}; 
+                v__entity_3:                    {{v__entity_3                   }}; 
+                v__entity_4:                    {{v__entity_4                   }}; 
+                v__entity_type_1:               {{v__entity_type_1              }};  
+                v__entity_type_2:               {{v__entity_type_2              }};
+                v__entity_type_3:               {{v__entity_type_3              }}; 
+                v__entity_type_4:               {{v__entity_type_4              }}; 
+                _________________________________________________________________
+                v__entity_first:                {{v__entity_first               }};
+                v__entity_JSON:                 {{v__entity_JSON                }};   
+                v__entity:                      {{v__entity                     }}; 
+                v__entity_domain:               {{v__entity_domain              }};
+                v__entity_type_selected:        {{v__entity_type_selected       }}; 
+                v__entity_type:                 {{v__entity_type                }};
+                v__entity_info:                 {{v__entity_info                }};
+
+  - choose:
+      #####################################################
+      # ENTITIES                                          #
+      #####################################################
+      - conditions:
+          - condition: template
+            value_template: '{{ v__command == "view" and ( (v__button_pressed == "SCENE_1" and v__entity_1 is not none ) or (v__button_pressed == "SCENE_2" and v__entity_2 is not none) or (v__button_pressed == "SCENE_3" and v__entity_3 is not none) or (v__button_pressed == "SCENE_4" and v__entity_4 is not none) ) }}'
+        sequence:
+          - choose:
+              - conditions: #SCENE_1
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SCENE_1" and v__entity_1 is not none }}'
+                sequence:
+                  - service: input_text.set_value
+                    data:
+                      entity_id: "{{ v__entity_helper }}"
+                      value: '{{ {"entity": v__entity_1, "type": v__entity_type_1} | tojson }}'
+
+              - conditions: #SCENE_2
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SCENE_2" and v__entity_2 is not none }}'
+                sequence:
+                  - service: input_text.set_value
+                    data:
+                      entity_id: "{{ v__entity_helper }}"
+                      value: '{{ {"entity": v__entity_2, "type": v__entity_type_2} | tojson }}'
+
+              - conditions: #SCENE_3
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SCENE_3" and v__entity_3 is not none }}'
+                sequence:
+                  - service: input_text.set_value
+                    data:
+                      entity_id: "{{ v__entity_helper }}"
+                      value: '{{ {"entity": v__entity_3, "type": v__entity_type_3} | tojson }}'
+
+              - conditions: #SCENE_4
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SCENE_4" and v__entity_4 is not none }}'
+                sequence:
+                  - service: input_text.set_value
+                    data:
+                      entity_id: "{{ v__entity_helper }}"
+                      value: '{{ {"entity": v__entity_4, "type": v__entity_type_4} | tojson }}'
+
+      #####################################################
+      # LIGHTS                                            #
+      #####################################################
+      - conditions:
+          - condition: template
+            value_template: '{{ v__entity_type.startswith("LIGHT") }}'
+        sequence:
           - variables:
-              v__new_brightness: >
-                {% if v__light_current_brightness + v__brightness_step >= v__brightness_max %}
-                  {{ v__brightness_max }}
+              v__light_supported_color_modes: >
+                {% set entity_id = v__entity %}
+                {% if v__entity_type == "LIGHT" %}
+                  {% set modes = state_attr(entity_id, 'supported_color_modes') %}
+                  {% if modes %}
+                    {% set modes_list = modes | map(attribute='value') | list %}
+                    [{{ modes_list | map('string') | join(', ') }}]
+                  {% else %} []
+                  {% endif %}
+                {% elif v__entity_type == "LIGHT_ONOFF" %} [onoff]
+                {% elif v__entity_type == "LIGHT_BRIGHTNESS" %} [brightness]
+                {% elif v__entity_type == "LIGHT_COLOR_TEMP" %} [color_temp_kelvin]
+                {% elif v__entity_type == "LIGHT_HS" %} [hs]
+                {% else %} []
+                {% endif %}
+              v__light_current_brightness: '{{ state_attr(v__entity, "brightness")  or 0 }}'
+              v__light_current_color_temp: '{{ state_attr(v__entity, "color_temp_kelvin")  or 0 }}'
+              v__light_current_hue: '{{ (state_attr(v__entity, "hs_color") or [0,0])[0] | int }}'
+              v__light_current_saturation: '{{ (state_attr(v__entity, "hs_color") or [0,0])[1] | int }}'
+              v__light_current_min_color_temp_kelvin: '{{ state_attr(v__entity, "min_color_temp_kelvin") or 0 }}'
+              v__light_current_max_color_temp_kelvin: '{{ state_attr(v__entity, "max_color_temp_kelvin") or 0 }}'
+              v__color_min: >
+                {% if v__light_current_min_color_temp_kelvin > 0 %}
+                  {{ [v__color_min, v__light_current_min_color_temp_kelvin] | max }}
                 {% else %}
-                  {{ v__light_current_brightness + v__brightness_step }}
-                {% endif %}             
+                  {{ v__color_min }}
+                {% endif %}
+              v__color_max: >
+                {% if v__light_current_max_color_temp_kelvin > 0 %}
+                  {{ [v__color_max, v__light_current_max_color_temp_kelvin] | min }}
+                {% else %}
+                  {{ v__color_max }}
+                {% endif %}
           - choose:
               - conditions:
                   - condition: template
-                    value_template: '{{ v__debug_f == true }}'
+                    value_template: "{{ v__debug_f == true }}"
                 sequence:
                   - service: persistent_notification.create
                     data:
-                      title: 'Parameters - new values'
+                      title: "Parameters - current values"
                       message: |
-                        v__new_brightness: {{ v__new_brightness }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              brightness: '{{ v__new_brightness }}'
-              transition: '{{ v__brightness_transition_time }}'       
-           
-        - conditions: #DIM_UP_LP - increase light brightness - long press
-          - condition: template
-            value_template: '{{ v__button_pressed == "DIM_UP_LP"  and ["color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-            - repeat:
-                while:
+                        v__light_supported_color_modes:           {{ v__light_supported_color_modes }};
+                        v__light_current_brightness:              {{ v__light_current_brightness    }};
+                        v__light_current_color_temp:              {{ v__light_current_color_temp    }};
+                        v__light_current_hue:                     {{ v__light_current_hue           }};
+                        v__light_current_saturation:              {{ v__light_current_saturation    }};
+                        v__light_current_min_color_temp_kelvin:   {{ v__light_current_min_color_temp_kelvin    }};
+                        v__light_current_max_color_temp_kelvin:   {{ v__light_current_max_color_temp_kelvin    }};
+          - choose:
+              #ON / OFF
+              - conditions: #ON
                   - condition: template
-                    value_template: '{{ v__button_pressed != "STOP" }}'
+                    value_template: '{{ v__button_pressed == "TURN_ON" and ["color_temp_kelvin", "color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
                 sequence:
                   - variables:
-                      v__light_current_brightness:  '{{ state_attr(v__entity, "brightness")  or 0 }}' 
+                      v__off_brightness: '{{ state_attr(v__entity, "off_brightness")  or 0 }}'
                       v__new_brightness: >
-                        {% if v__light_current_brightness + (v__brightness_step/2) >= v__brightness_max %}
+                        {% if v__brightness_force and v__light_current_brightness == 0  %}     {{ v__brightness_force_value | int }} 
+                        {% elif v__brightness_double_on and v__light_current_brightness > 0%}  {{ v__brightness_max | int }} 
+                        {% elif v__off_brightness > 0 %}                                       {{ v__off_brightness | int }} 
+                        {% else %} none 
+                        {% endif %}
+                      v__new_color_temp: "{% if v__color_force %} {{ v__color_force_value | int }} {% else %} none {% endif %}"
+                      v__new_transition: "{% if v__brightness_transition_time %} {{ v__brightness_transition_time }} {% else %} none {% endif %}"
+                      v__data: >
+                        {
+                        {% if v__new_brightness | is_number %}
+                        "brightness": "{{ v__new_brightness }}",
+                        {% endif %}
+                        {% if v__new_color_temp | is_number %}
+                        "color_temp_kelvin": "{{ v__new_color_temp }}",
+                        {% endif %}
+                        {% if v__new_transition | is_number %}
+                        "transition": "{{ v__new_transition }}",
+                        {% endif %}
+                        }
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__new_brightness: {{ v__new_brightness }},
+                                v__new_color_temp: {{ v__new_color_temp }},
+                                v__new_transition: {{ v__new_transition }},
+                                v__data:           {{ v__data }}
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data: "{{ v__data }}"
+
+              - conditions: #ON
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_ON"  }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #OFF - off when brightness > 0
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_OFF" and ["color_temp_kelvin", "color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 and (state_attr(v__entity, "brightness") or 0 ) | int > 0 }}'
+                sequence:
+                  - service: light.turn_off
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #OFF - on when double off
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_OFF" and ["color_temp_kelvin", "color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 and (state_attr(v__entity, "brightness") or 0 ) | int == 0 and v__brightness_double_off == true }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      brightness: "{{ v__brightness_min }}"
+
+              - conditions: #OFF
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_OFF" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_off"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              #BRIGHTNESS
+              - conditions: #DIM_UP - increase light brightness
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "DIM_UP"  and ["color_temp_kelvin", "color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - variables:
+                      v__new_brightness: >
+                        {% if v__light_current_brightness + v__brightness_step >= v__brightness_max %}
                           {{ v__brightness_max }}
                         {% else %}
-                          {{ v__light_current_brightness + (v__brightness_step/2) }}
-                        {% endif %}                      
-                  - service: '{{ v__entity_domain }}.turn_on'
+                          {{ v__light_current_brightness + v__brightness_step }}
+                        {% endif %}
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__new_brightness: {{ v__new_brightness }}
+                  - service: "{{ v__entity_domain }}.turn_on"
                     target:
-                      entity_id: '{{ v__entity }}'
+                      entity_id: "{{ v__entity }}"
                     data:
-                      brightness: '{{ v__new_brightness }}'
-                      transition: '0.1'
-                  - delay: '00:00:00.1'
-          
-        - conditions: #DIM_DOWN - decrease light brightness 
-          - condition: template
-            value_template: '{{ v__button_pressed == "DIM_DOWN"  and ["color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-          - variables:
-              v__new_brightness: >
-                {% if v__light_current_brightness <= v__brightness_step %}
-                  {{ v__brightness_min }}
-                {% else %}
-                  {{ v__light_current_brightness - v__brightness_step }}
-                {% endif %}              
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: '{{ v__debug_f == true }}'
-                sequence:
-                  - service: persistent_notification.create
-                    data:
-                      title: 'Parameters - new values'
-                      message: |
-                        v__new_brightness: {{ v__new_brightness }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              brightness: '{{ v__new_brightness }}'
-              transition: '{{ v__brightness_transition_time }}'
+                      brightness: "{{ v__new_brightness }}"
+                      transition: "{{ v__brightness_transition_time }}"
 
-        - conditions: #DOWN_LP - decrease light brightness - long press
-          - condition: template
-            value_template: '{{ v__button_pressed == "DIM_DOWN_LP" and ["color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-            - repeat:
-                while:
+              - conditions: #DIM_UP_LP - increase light brightness - long press
                   - condition: template
-                    value_template: '{{ v__button_pressed != "STOP" }}'
+                    value_template: '{{ v__button_pressed == "DIM_UP_LP"  and ["color_temp_kelvin", "color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - repeat:
+                      while:
+                        - condition: template
+                          value_template: '{{ v__button_pressed != "STOP" }}'
+                      sequence:
+                        - variables:
+                            v__light_current_brightness: '{{ state_attr(v__entity, "brightness")  or 0 }}'
+                            v__new_brightness: >
+                              {% if v__light_current_brightness + (v__brightness_step/2) >= v__brightness_max %}
+                                {{ v__brightness_max }}
+                              {% else %}
+                                {{ v__light_current_brightness + (v__brightness_step/2) }}
+                              {% endif %}
+                        - service: "{{ v__entity_domain }}.turn_on"
+                          target:
+                            entity_id: "{{ v__entity }}"
+                          data:
+                            brightness: "{{ v__new_brightness }}"
+                            transition: "0.1"
+                        - delay: "00:00:00.1"
+
+              - conditions: #DIM_DOWN - decrease light brightness
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "DIM_DOWN"  and ["color_temp_kelvin", "color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
                 sequence:
                   - variables:
-                      v__light_current_brightness:  '{{ state_attr(v__entity, "brightness")  or 0 }}' 
                       v__new_brightness: >
-                          {% if v__light_current_brightness <= (v__brightness_step/2) %}
-                            {{ v__brightness_min }}
-                          {% else %}
-                            {{ v__light_current_brightness - (v__brightness_step/2) }}
-                          {% endif %}                      
-                  - service: '{{ v__entity_domain }}.turn_on'
-                    target:
-                      entity_id: '{{ v__entity }}'
-                    data:
-                      brightness: '{{v__new_brightness}}'
-                      transition: '0.1'
-                  - delay: '00:00:00.1'                     
-        
-        #COLOR TEMPERATURE
-        - conditions: #COLOR_UP - higher color temperature 
-          - condition: template
-            value_template: '{{ v__button_pressed == "COLOR_UP" and ["color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-          - variables:
-              v__tmp_color_temp: >
-                {% if v__light_current_color_temp > v__color_max %}
-                  {{ v__color_max }}
-                {% else %}
-                  {{v__light_current_color_temp}}
-                {% endif %}
-              v__new_color_temp: >
-                {% if v__tmp_color_temp - v__color_step < v__color_min %}
-                  {{ v__color_min }}
-                {% else %}
-                  {{ v__tmp_color_temp - v__color_step }}
-                {% endif %}  
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: '{{ v__debug_f == true }}'
-                sequence:
-                  - service: persistent_notification.create
-                    data:
-                      title: 'Parameters - new values'
-                      message: |
-                        v__tmp_color_temp: {{ v__tmp_color_temp }}
-                        v__new_color_temp: {{ v__new_color_temp }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              color_temp: '{{ v__new_color_temp }}'
-              transition: '{{ v__color_transition_time }}'
-          - delay: '00:00:00.1'
-
-        - conditions: #COLOR_UP_LP - higher color temperature - long press
-          - condition: template
-            value_template: '{{ v__button_pressed == "COLOR_UP_LP" and ["color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-            - repeat:
-                while:
-                  - condition: template
-                    value_template: '{{ v__button_pressed != "STOP" }}'
-                sequence:
-                  - variables:    
-                      v__light_current_color_temp:  '{{ state_attr(v__entity, "color_temp")  or 0 }}' 
-                      v__tmp_color_temp: >
-                        {% if v__light_current_color_temp > v__color_max %}
-                          {{ v__color_max }}
+                        {% if v__light_current_brightness <= v__brightness_step %}
+                          {{ v__brightness_min }}
                         {% else %}
-                          {{v__light_current_color_temp}}
+                          {{ v__light_current_brightness - v__brightness_step }}
                         {% endif %}
-                      v__new_color_temp: >
-                        {% if v__tmp_color_temp - v__color_step_long_press < v__color_min %}
-                          {{ v__color_min }}
-                        {% else %}
-                          {{ v__tmp_color_temp - v__color_step_long_press }}
-                        {% endif %}                        
-                  - service: '{{ v__entity_domain }}.turn_on'
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__new_brightness: {{ v__new_brightness }}
+                  - service: "{{ v__entity_domain }}.turn_on"
                     target:
-                      entity_id: '{{ v__entity }}'
+                      entity_id: "{{ v__entity }}"
                     data:
-                      color_temp: '{{ v__new_color_temp }}'
-                      transition: '0.1'
-                  - delay: '00:00:00.1'
-                
-        - conditions: #COLOR_DOWN - lower color temperature     
-          - condition: template
-            value_template: '{{ v__button_pressed == "COLOR_DOWN" and ["color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-          - variables:
-              v__tmp_color_temp: >
-                {% if v__light_current_color_temp < v__color_min %}
-                  {{ v__color_min }}
-                {% else %}
-                  {{v__light_current_color_temp}}
-                {% endif %}
-              v__new_color_temp: >
-                {% if v__tmp_color_temp + v__color_step > v__color_max %}
-                  {{ v__color_max }}
-                {% else %}
-                  {{ v__tmp_color_temp + v__color_step }}
-                {% endif %}            
-          - choose:
-              - conditions:
+                      brightness: "{{ v__new_brightness }}"
+                      transition: "{{ v__brightness_transition_time }}"
+
+              - conditions: #DOWN_LP - decrease light brightness - long press
                   - condition: template
-                    value_template: '{{ v__debug_f == true }}'
+                    value_template: '{{ v__button_pressed == "DIM_DOWN_LP" and ["color_temp_kelvin", "color_temp", "brightness"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
                 sequence:
-                  - service: persistent_notification.create
-                    data:
-                      title: 'Parameters - new values'
-                      message: |
-                        v__tmp_color_temp: {{ v__tmp_color_temp }}
-                        v__new_color_temp: {{ v__new_color_temp }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              color_temp: '{{ v__new_color_temp }}'  
-              transition: '{{ v__color_transition_time }}'
-          - delay: '00:00:00.1'
-          
-        - conditions: #COLOR_DOWN_LP - higher color temperature - long press
-          - condition: template
-            value_template: '{{ v__button_pressed == "COLOR_DOWN_LP" and ["color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-            - repeat:
-                while:
+                  - repeat:
+                      while:
+                        - condition: template
+                          value_template: '{{ v__button_pressed != "STOP" }}'
+                      sequence:
+                        - variables:
+                            v__light_current_brightness: '{{ state_attr(v__entity, "brightness")  or 0 }}'
+                            v__new_brightness: >
+                              {% if v__light_current_brightness <= (v__brightness_step/2) %}
+                                {{ v__brightness_min }}
+                              {% else %}
+                                {{ v__light_current_brightness - (v__brightness_step/2) }}
+                              {% endif %}
+                        - service: "{{ v__entity_domain }}.turn_on"
+                          target:
+                            entity_id: "{{ v__entity }}"
+                          data:
+                            brightness: "{{v__new_brightness}}"
+                            transition: "0.1"
+                        - delay: "00:00:00.1"
+
+              #COLOR TEMPERATURE
+              - conditions: #COLOR_UP - higher color temperature
                   - condition: template
-                    value_template: '{{ v__button_pressed != "STOP" }}'
+                    value_template: '{{ v__button_pressed == "COLOR_UP" and ["color_temp_kelvin", "color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
                 sequence:
-                  - variables:  
-                      v__light_current_color_temp:  '{{ state_attr(v__entity, "color_temp")  or 0 }}' 
+                  - variables:
                       v__tmp_color_temp: >
                         {% if v__light_current_color_temp < v__color_min %}
                           {{ v__color_min }}
@@ -1055,465 +951,584 @@ action:
                           {{v__light_current_color_temp}}
                         {% endif %}
                       v__new_color_temp: >
-                        {% if v__tmp_color_temp + v__color_step_long_press > v__color_max %}
+                        {% if v__tmp_color_temp + v__color_step > v__color_max %}
                           {{ v__color_max }}
                         {% else %}
-                          {{ v__tmp_color_temp + v__color_step_long_press }}
+                          {{ v__tmp_color_temp + v__color_step }}
                         {% endif %}
-                  - service: '{{ v__entity_domain }}.turn_on'
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__tmp_color_temp: {{ v__tmp_color_temp }}
+                                v__new_color_temp: {{ v__new_color_temp }}
+                  - service: "{{ v__entity_domain }}.turn_on"
                     target:
-                      entity_id: '{{ v__entity }}'
+                      entity_id: "{{ v__entity }}"
                     data:
-                      color_temp: '{{ v__new_color_temp }}'                 
-                      transition: '0.1'
-                  - delay: '00:00:00.1'
- 
-        #HUE / SATURATION
-        - conditions: #SATURATION_UP - higher color saturation 
+                      color_temp_kelvin: "{{ v__new_color_temp }}"
+                      transition: "{{ v__color_transition_time }}"
+                  - delay: "00:00:00.1"
+
+              - conditions: #COLOR_UP_LP - higher color temperature - long press
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "COLOR_UP_LP" and ["color_temp_kelvin", "color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - repeat:
+                      while:
+                        - condition: template
+                          value_template: '{{ v__button_pressed != "STOP" }}'
+                      sequence:
+                        - variables:
+                            v__light_current_color_temp: '{{ state_attr(v__entity, "color_temp_kelvin")  or 0 }}'
+                            v__tmp_color_temp: >
+                              {% if v__light_current_color_temp < v__color_min %}
+                                {{ v__color_min }}
+                              {% else %}
+                                {{v__light_current_color_temp}}
+                              {% endif %}
+                            v__new_color_temp: >
+                              {% if v__tmp_color_temp + v__color_step_long_press > v__color_max %}
+                                {{ v__color_max }}
+                              {% else %}
+                                {{ v__tmp_color_temp + v__color_step_long_press }}
+                              {% endif %}
+                        - service: "{{ v__entity_domain }}.turn_on"
+                          target:
+                            entity_id: "{{ v__entity }}"
+                          data:
+                            color_temp_kelvin: "{{ v__new_color_temp }}"
+                            transition: "0.1"
+                        - delay: "00:00:00.1"
+
+              - conditions: #COLOR_DOWN - lower color temperature
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "COLOR_DOWN" and ["color_temp_kelvin", "color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - variables:
+                      v__tmp_color_temp: >
+                        {% if v__light_current_color_temp > v__color_max %}
+                          {{ v__color_max }}
+                        {% else %}
+                          {{v__light_current_color_temp}}
+                        {% endif %}
+                      v__new_color_temp: >
+                        {% if v__tmp_color_temp - v__color_step < v__color_min %}
+                          {{ v__color_min }}
+                        {% else %}
+                          {{ v__tmp_color_temp - v__color_step }}
+                        {% endif %}
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__tmp_color_temp: {{ v__tmp_color_temp }}
+                                v__new_color_temp: {{ v__new_color_temp }}
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      color_temp_kelvin: "{{ v__new_color_temp }}"
+                      transition: "{{ v__color_transition_time }}"
+                  - delay: "00:00:00.1"
+
+              - conditions: #COLOR_DOWN_LP - lower color temperature - long press
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "COLOR_DOWN_LP" and ["color_temp_kelvin", "color_temp"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - repeat:
+                      while:
+                        - condition: template
+                          value_template: '{{ v__button_pressed != "STOP" }}'
+                      sequence:
+                        - variables:
+                            v__light_current_color_temp: '{{ state_attr(v__entity, "color_temp_kelvin")  or 0 }}'
+                            v__tmp_color_temp: >
+                              {% if v__light_current_color_temp > v__color_max %}
+                                {{ v__color_max }}
+                              {% else %}
+                                {{v__light_current_color_temp}}
+                              {% endif %}
+                            v__new_color_temp: >
+                              {% if v__tmp_color_temp - v__color_step_long_press < v__color_min %}
+                                {{ v__color_min }}
+                              {% else %}
+                                {{ v__tmp_color_temp - v__color_step_long_press }}
+                              {% endif %}
+                        - service: "{{ v__entity_domain }}.turn_on"
+                          target:
+                            entity_id: "{{ v__entity }}"
+                          data:
+                            color_temp_kelvin: "{{ v__new_color_temp }}"
+                            transition: "0.1"
+                        - delay: "00:00:00.1"
+
+              #HUE / SATURATION
+              - conditions: #SATURATION_UP - higher color saturation
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SATURATION_UP" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - variables:
+                      v__new_saturation: "{% if (v__light_current_saturation + v__saturation_step) >= 100 %} {{ 100 }} {% else %} {{ v__light_current_saturation + v__saturation_step }} {% endif %}"
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__new_saturation: {{ v__new_saturation }}
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      hs_color:
+                        [
+                          "{{ v__light_current_hue }}",
+                          "{{ v__new_saturation }}",
+                        ]
+                      transition: "{{ v__saturation_transition_time }}"
+
+              - conditions: #SATURATION_DOWN - lower color saturation
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SATURATION_DOWN" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - variables:
+                      v__new_saturation: "{% if (v__light_current_saturation - v__saturation_step) < 0 %} {{ 0 }} {% else %} {{ v__light_current_saturation - v__saturation_step }} {% endif %}"
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__new_saturation: {{ v__new_saturation }}
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      hs_color:
+                        [
+                          "{{ v__light_current_hue }}",
+                          "{{ v__new_saturation }}",
+                        ]
+                      transition: "{{ v__saturation_transition_time }}"
+
+              - conditions: #HUE_LEFT - lower color hue
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "HUE_LEFT" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - variables:
+                      v__new_hue: "{% if (v__light_current_hue - v__hue_step) < 0 %} {{ 360 + (v__light_current_hue - v__hue_step) }} {% else %} {{ (v__light_current_hue - v__hue_step) }} {% endif %}"
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__new_hue: {{ v__new_hue }}
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      hs_color:
+                        [
+                          "{{ v__new_hue }}",
+                          "{{ v__light_current_saturation }}",
+                        ]
+                      transition: "{{ v__hue_transition_time }}"
+
+              - conditions: #HUE_RIGHT - higher color hue
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "HUE_RIGHT" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
+                sequence:
+                  - variables:
+                      v__new_hue: "{{ (v__light_current_hue + v__hue_step) % 360 }}"
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ v__debug_f == true }}"
+                        sequence:
+                          - service: persistent_notification.create
+                            data:
+                              title: "Parameters - new values"
+                              message: |
+                                v__new_hue: {{ v__new_hue }}
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      hs_color:
+                        [
+                          "{{ v__new_hue }}",
+                          "{{ v__light_current_saturation }}",
+                        ]
+                      transition: "{{ v__hue_transition_time }}"
+
+      #####################################################
+      # FANS                                              #
+      #####################################################
+      - conditions:
           - condition: template
-            value_template: '{{ v__button_pressed == "SATURATION_UP" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
+            value_template: '{{ v__entity_type in ("FAN") }}'
+        sequence:
           - variables:
-              v__new_saturation: '{% if (v__light_current_saturation + v__saturation_step) >= 100 %} {{ 100 }} {% else %} {{ v__light_current_saturation + v__saturation_step }} {% endif %}'
+              v__fan_preset_modes: '{{ state_attr(v__entity, "preset_modes") or [] }}'
+              v__current_fan_mode: '{{ state_attr(v__entity, "preset_mode" ) or "" }}'
+              v__current_fan_speed: '{{ state_attr(v__entity, "percentage"  ) or 0 | int }}'
+              v__current_fan_mode_index: >
+                {% if v__current_fan_mode in v__fan_preset_modes %}  
+                {{ v__fan_preset_modes.index(v__current_fan_mode) }}
+                {% else %}
+                -1
+                {% endif %}
+              v__new_fan_speed_up: >
+                {% if v__current_fan_speed + v__fan_speed_increase_step >= v__fan_speed_max %}
+                {{ v__fan_speed_max }}
+                {% else %}
+                {{ v__current_fan_speed + v__fan_speed_increase_step }}
+                {% endif %}
+              v__new_fan_speed_down: >
+                {% if v__current_fan_speed - v__fan_speed_decrease_step <= v__fan_speed_min %}
+                {{ v__fan_speed_min }}
+                {% else %} 
+                {{ v__current_fan_speed - v__fan_speed_decrease_step }}
+                {% endif %}
+              v__new_preset_mode_next: >
+                {% set modes = v__fan_preset_modes %}
+                {% set current_index = v__current_fan_mode_index %}
+                {% set next_index = (current_index + 1) % (modes | length) %}
+                {{ modes[next_index] }}
+              v__new_preset_mode_prev: >
+                {% set modes = v__fan_preset_modes %}
+                {% set current_index = v__current_fan_mode_index %}
+                {% set prev_index = (current_index - 1) % (modes | length) %}
+                {{ modes[prev_index] }}
+
           - choose:
               - conditions:
                   - condition: template
-                    value_template: '{{ v__debug_f == true }}'
+                    value_template: "{{ v__debug_f == true }}"
                 sequence:
                   - service: persistent_notification.create
                     data:
-                      title: 'Parameters - new values'
+                      title: "Parameters - current values"
                       message: |
-                        v__new_saturation: {{ v__new_saturation }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              hs_color: ['{{ v__light_current_hue }}', '{{ v__new_saturation }}']
-              transition: '{{ v__saturation_transition_time }}'
-                    
-        - conditions: #SATURATION_DOWN - lower color saturation 
-          - condition: template
-            value_template: '{{ v__button_pressed == "SATURATION_DOWN" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-          - variables:
-              v__new_saturation: '{% if (v__light_current_saturation - v__saturation_step) < 0 %} {{ 0 }} {% else %} {{ v__light_current_saturation - v__saturation_step }} {% endif %}'
+                        v__fan_preset_modes:       {{ v__fan_preset_modes }};
+                        v__current_fan_mode:       {{ v__current_fan_mode }};
+                        v__current_fan_speed:      {{ v__current_fan_speed }};
+                        v__current_fan_mode_index: {{ v__current_fan_mode_index }};
+                        v__new_fan_speed_up:       {{ v__new_fan_speed_up }};
+                        v__new_fan_speed_down:     {{ v__new_fan_speed_down }};
+                        v__new_preset_mode_next:   {{ v__new_preset_mode_next }}; 
+                        v__new_preset_mode_prev:   {{ v__new_preset_mode_prev }};
           - choose:
-              - conditions:
+              - conditions: #ON
                   - condition: template
-                    value_template: '{{ v__debug_f == true }}'
+                    value_template: '{{ v__button_pressed == "TURN_ON" }}'
                 sequence:
-                  - service: persistent_notification.create
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                  - delay: "00:00:01.0"
+
+              - conditions: #OFF
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_OFF" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_off"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                  - delay: "00:00:01.0"
+
+              - conditions: #DIM_UP
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "DIM_UP" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.set_percentage"
+                    target:
+                      entity_id: "{{ v__entity }}"
                     data:
-                      title: 'Parameters - new values'
-                      message: |
-                        v__new_saturation: {{ v__new_saturation }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              hs_color: ['{{ v__light_current_hue }}', '{{ v__new_saturation }}']
-              transition: '{{ v__saturation_transition_time }}'
-            
-        - conditions: #HUE_LEFT - lower color hue 
+                      percentage: "{{ v__new_fan_speed_up }}"
+                  - delay: "00:00:01.0"
+
+              - conditions: #DIM_DOWN
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "DIM_DOWN" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.set_percentage"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      percentage: "{{ v__new_fan_speed_down }}"
+                  - delay: "00:00:01.0"
+
+              - conditions: #COLOR_UP - next mode
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "COLOR_UP" }}'
+                sequence:
+                  # - variables:
+                  - service: "{{ v__entity_domain }}.set_preset_mode"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      preset_mode: "{{ v__new_preset_mode_next }}"
+                  - delay: "00:00:01.0"
+
+              - conditions: #COLOR_DOWN - previous mode
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "COLOR_DOWN" }}'
+                sequence:
+                  # - variables:
+                  - service: "{{ v__entity_domain }}.set_preset_mode"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      preset_mode: "{{ v__new_preset_mode_prev }}"
+                  - delay: "00:00:01.0"
+
+      #####################################################
+      # SWITCHES                                          #
+      #####################################################
+      - conditions:
           - condition: template
-            value_template: '{{ v__button_pressed == "HUE_LEFT" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-          - variables: 
-              v__new_hue: '{% if (v__light_current_hue - v__hue_step) < 0 %} {{ 360 + (v__light_current_hue - v__hue_step) }} {% else %} {{ (v__light_current_hue - v__hue_step) }} {% endif %}'
+            value_template: '{{ v__entity_type == "SWITCH" }}'
+        sequence:
           - choose:
-              - conditions:
+              - conditions: #ON
                   - condition: template
-                    value_template: '{{ v__debug_f == true }}'
+                    value_template: '{{ v__button_pressed == "TURN_ON" }}'
                 sequence:
-                  - service: persistent_notification.create
-                    data:
-                      title: 'Parameters - new values'
-                      message: |
-                        v__new_hue: {{ v__new_hue }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              hs_color: ['{{ v__new_hue }}', '{{ v__light_current_saturation }}']
-              transition: '{{ v__hue_transition_time }}'
-              
-        - conditions: #HUE_RIGHT - higher color hue 
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #OFF
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_OFF" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_off"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+      #####################################################
+      # AUTOMATIONS                                       #
+      #####################################################
+      - conditions:
           - condition: template
-            value_template: '{{ v__button_pressed == "HUE_RIGHT" and ["xy", "hs"] | select("in", v__light_supported_color_modes) | list | length > 0 }}'
-          sequence:
-          - variables:
-              v__new_hue: '{{ (v__light_current_hue + v__hue_step) % 360 }}'            
+            value_template: '{{ v__entity_type == "AUTOMATION" }}'
+        sequence:
           - choose:
-              - conditions:
+              - conditions: #ON
                   - condition: template
-                    value_template: '{{ v__debug_f == true }}'
+                    value_template: '{{ v__button_pressed == "TURN_ON" }}'
                 sequence:
-                  - service: persistent_notification.create
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #OFF
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_OFF" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_off"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #UP / DOWN - trigger
+                  - condition: template
+                    value_template: '{{ (v__button_pressed in ("DIM_UP", "DIM_DOWN") and v__automation_trigger_button is none) or ( v__button_pressed == v__automation_trigger_button) }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.trigger"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+      #####################################################
+      # SCENES                                            #
+      #####################################################
+      - conditions:
+          - condition: template
+            value_template: '{{ v__entity_type == "SCENE" }}'
+        sequence:
+          # - variables:
+          # button_mapping: ""
+          - choose:
+              - conditions: #ON
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_ON" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+      #####################################################
+      # MEDIA_PLAYER                                      #
+      #####################################################
+      - conditions:
+          - condition: template
+            value_template: '{{ v__entity_type == "MEDIA_PLAYER" }}'
+        sequence:
+          - choose:
+              - conditions: #ON
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_ON" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_on"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #OFF
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "TURN_OFF" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.turn_off"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #DIM_UP - volume up
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "DIM_UP" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.volume_up"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #DIM_DOWN - volume down
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "DIM_DOWN" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.volume_down"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #DOWN_LP - mute
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "DIM_DOWN_LP" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.volume_mute"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #COLOR_UP - Play media
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "COLOR_UP" }}'
+                sequence:
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: '{{ states(v__entity) == "playing" }}'
+                        sequence:
+                          - service: "{{ v__entity_domain }}.media_pause"
+                            target:
+                              entity_id: "{{ v__entity }}"
+                      - conditions:
+                          - condition: template
+                            value_template: '{{ states(v__entity) != "playing" }}'
+                        sequence:
+                          - service: "{{ v__entity_domain }}.media_play"
+                            target:
+                              entity_id: "{{ v__entity }}"
+
+              - conditions: #COLOR_DOWN - Stop media
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "COLOR_DOWN" }}'
+                sequence:
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: '{{ states(v__entity) == "playing" }}'
+                        sequence:
+                          - service: "{{ v__entity_domain }}.media_stop"
+                            target:
+                              entity_id: "{{ v__entity }}"
+
+              - conditions: #HUE_RIGHT - next track
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "HUE_RIGHT" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.media_next_track"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #HUE_LEFT - previous track
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "HUE_LEFT" }}'
+                sequence:
+                  - service: "{{ v__entity_domain }}.media_previous_track"
+                    target:
+                      entity_id: "{{ v__entity }}"
+
+              - conditions: #SATURATION_UP - next source
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SATURATION_UP" }}'
+                sequence:
+                  - variables:
+                      v__available_sources: >-
+                        {% set source_list = state_attr(v__entity, "source_list") %}
+                        {% if source_list is defined and source_list is iterable %}
+                          {{ source_list | list }}
+                        {% else %}
+                          []
+                        {% endif %}
+                      v__current_source: '{{ state_attr(v__entity, "source") }}'
+                      v__current_source_index: >-
+                        {% if v__current_source in v__available_sources %}
+                          {{ v__available_sources.index(v__current_source) }}
+                        {% else %}
+                          -1
+                        {% endif %}
+                  - service: "{{ v__entity_domain }}.select_source"
+                    target:
+                      entity_id: "{{ v__entity }}"
                     data:
-                      title: 'Parameters - new values'
-                      message: |
-                        v__new_hue: {{ v__new_hue }}
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              hs_color: ['{{ v__new_hue }}', '{{ v__light_current_saturation }}']
-              transition: '{{ v__hue_transition_time }}'
-      
-#####################################################
-# FANS                                              #
-#####################################################
-  - conditions: 
-    - condition: template
-      value_template: '{{ v__entity_type in ("FAN") }}'
-    sequence:
-      - variables:
-          v__fan_preset_modes:       '{{ state_attr(v__entity, "preset_modes") or [] }}'
-          v__current_fan_mode:       '{{ state_attr(v__entity, "preset_mode" ) or "" }}' 
-          v__current_fan_speed:      '{{ state_attr(v__entity, "percentage"  ) or 0 | int }}'
-          v__current_fan_mode_index: >
-            {% if v__current_fan_mode in v__fan_preset_modes %}  
-            {{ v__fan_preset_modes.index(v__current_fan_mode) }}
-            {% else %}
-            -1
-            {% endif %}         
-          v__new_fan_speed_up: >
-            {% if v__current_fan_speed + v__fan_speed_increase_step >= v__fan_speed_max %}
-            {{ v__fan_speed_max }}
-            {% else %}
-            {{ v__current_fan_speed + v__fan_speed_increase_step }}
-            {% endif %} 
-          v__new_fan_speed_down: >
-            {% if v__current_fan_speed - v__fan_speed_decrease_step <= v__fan_speed_min %}
-            {{ v__fan_speed_min }}
-            {% else %} 
-            {{ v__current_fan_speed - v__fan_speed_decrease_step }}
-            {% endif %}   
-          v__new_preset_mode_next: >
-            {% set modes = v__fan_preset_modes %}
-            {% set current_index = v__current_fan_mode_index %}
-            {% set next_index = (current_index + 1) % modes | length %}
-            {{ modes[next_index] }}        
-          v__new_preset_mode_prev: >
-            {% set modes = v__fan_preset_modes %}
-            {% set current_index = v__current_fan_mode_index %}
-            {% set prev_index = (current_index - 1) % modes | length %}
-            {{ modes[prev_index] }}
-         
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ v__debug_f == true }}'
-          sequence:
-            - service: persistent_notification.create
-              data:
-                title: 'Parameters - current values'
-                message: |
-                  v__fan_preset_modes:       {{ v__fan_preset_modes }};
-                  v__current_fan_mode:       {{ v__current_fan_mode }};
-                  v__current_fan_speed:      {{ v__current_fan_speed }};
-                  v__current_fan_mode_index: {{ v__current_fan_mode_index }};
-                  v__new_fan_speed_up:       {{ v__new_fan_speed_up }};
-                  v__new_fan_speed_down:     {{ v__new_fan_speed_down }};
-                  v__new_preset_mode_next:   {{ v__new_preset_mode_next }}; 
-                  v__new_preset_mode_prev:   {{ v__new_preset_mode_prev }};
-      - choose:
-    
-        - conditions: #ON 
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_ON" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-             entity_id: '{{ v__entity }}'     
-          - delay: '00:00:01.0'
-          
-        - conditions: #OFF  
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_OFF" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_off'
-            target:
-              entity_id: '{{ v__entity }}'            
-          - delay: '00:00:01.0'
-          
-        - conditions: #DIM_UP
-          - condition: template
-            value_template: '{{ v__button_pressed == "DIM_UP" }}' 
-          sequence:
-          - service: '{{ v__entity_domain }}.set_percentage'
-            target:
-              entity_id: '{{ v__entity }}' 
-            data:
-              percentage: '{{ v__new_fan_speed_up }}'            
-          - delay: '00:00:01.0'
-          
-        - conditions: #DIM_DOWN
-          - condition: template
-            value_template: '{{ v__button_pressed == "DIM_DOWN" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.set_percentage'
-            target:
-              entity_id: '{{ v__entity }}' 
-            data:
-              percentage: '{{ v__new_fan_speed_down }}'
-          - delay: '00:00:01.0'
-           
-        - conditions: #COLOR_UP - next mode 
-          - condition: template
-            value_template: '{{ v__button_pressed == "COLOR_UP" }}'
-          sequence:
-#          - variables:
-          - service: '{{ v__entity_domain }}.set_preset_mode'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              preset_mode: '{{ v__new_preset_mode_next }}'
-          - delay: '00:00:01.0'
-          
-        - conditions: #COLOR_DOWN - previous mode 
-          - condition: template
-            value_template: '{{ v__button_pressed == "COLOR_DOWN" }}'
-          sequence:
-#          - variables:
-          - service: '{{ v__entity_domain }}.set_preset_mode'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              preset_mode: '{{ v__new_preset_mode_prev }}'
-          - delay: '00:00:01.0'
-      
-#####################################################
-# SWITCHES                                          #
-#####################################################
-  - conditions:
-    - condition: template
-      value_template: '{{ v__entity_type == "SWITCH" }}'
-    sequence:
-      - choose:
+                      source: >-
+                        {% if v__available_sources %}
+                          {{ v__available_sources[(v__current_source_index + 1) % (v__available_sources | length)] }}
+                        {% endif %}
 
-        - conditions: #ON
-            - condition: template
-              value_template: '{{ v__button_pressed == "TURN_ON" }}'
-          sequence:
-            - service: '{{ v__entity_domain }}.turn_on'
-              target:
-                entity_id: '{{ v__entity }}'
+              - conditions: #SATURATION_DOWN - previous source
+                  - condition: template
+                    value_template: '{{ v__button_pressed == "SATURATION_DOWN" }}'
+                sequence:
+                  - variables:
+                      v__available_sources: >-
+                        {% set source_list = state_attr(v__entity, "source_list") %}
+                        {% if source_list is defined and source_list is iterable %}
+                          {{ source_list | list }}
+                        {% else %}
+                          []
+                        {% endif %}
+                      v__current_source: '{{ state_attr(v__entity, "source") }}'
+                      v__current_source_index: >-
+                        {% if v__current_source in v__available_sources %}
+                          {{ v__available_sources.index(v__current_source) }}
+                        {% else %}
+                          -1
+                        {% endif %}
+                  - service: "{{ v__entity_domain }}.select_source"
+                    target:
+                      entity_id: "{{ v__entity }}"
+                    data:
+                      source: >-
+                        {% if v__available_sources %}
+                          {{ v__available_sources[(v__current_source_index - 1) % (v__available_sources | length)] }}
+                        {% endif %}
 
-        - conditions: #OFF
-            - condition: template
-              value_template: '{{ v__button_pressed == "TURN_OFF" }}'
-          sequence:
-            - service: '{{ v__entity_domain }}.turn_off'
-              target:
-                entity_id: '{{ v__entity }}'
-
-#####################################################
-# AUTOMATIONS                                       #
-#####################################################
-  - conditions:
-    - condition: template
-      value_template: '{{ v__entity_type == "AUTOMATION" }}'
-    sequence:
-      - choose:
-      
-        - conditions: #ON
-            - condition: template
-              value_template: '{{ v__button_pressed == "TURN_ON" }}'
-          sequence:
-            - service: '{{ v__entity_domain }}.turn_on'
-              target:
-                entity_id: '{{ v__entity }}'
-             
-        - conditions: #OFF 
-            - condition: template
-              value_template: '{{ v__button_pressed == "TURN_OFF" }}'
-          sequence:
-            - service: '{{ v__entity_domain }}.turn_off'
-              target:
-                entity_id: '{{ v__entity }}'
-        
-        - conditions: #UP / DOWN - trigger
-            - condition: template
-              value_template: '{{ (v__button_pressed in ("DIM_UP", "DIM_DOWN") and v__automation_trigger_button is none) or ( v__button_pressed == v__automation_trigger_button) }}' 
-          sequence:
-            - service: '{{ v__entity_domain }}.trigger'
-              target:
-                entity_id: '{{ v__entity }}' 
-
-#####################################################
-# SCENES                                            #
-#####################################################
-  - conditions:
-    - condition: template
-      value_template: '{{ v__entity_type == "SCENE" }}'
-    sequence:
-      # - variables:
-        # button_mapping: ""
-      - choose:
-      
-        - conditions: #ON
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_ON" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-             entity_id: '{{ v__entity }}'
-
-#####################################################
-# MEDIA_PLAYER                                      #
-#####################################################
-  - conditions:
-    - condition: template
-      value_template: '{{ v__entity_type == "MEDIA_PLAYER" }}'
-    sequence:
-      - choose:
-      
-        - conditions: #ON
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_ON" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_on'
-            target:
-             entity_id: '{{ v__entity }}'
-
-        - conditions: #OFF
-          - condition: template
-            value_template: '{{ v__button_pressed == "TURN_OFF" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.turn_off'
-            target:
-             entity_id: '{{ v__entity }}'
-        
-        - conditions: #DIM_UP - volume up
-            - condition: template
-              value_template: '{{ v__button_pressed == "DIM_UP" }}' 
-          sequence:
-            - service: '{{ v__entity_domain }}.volume_up'
-              target:
-                entity_id: '{{ v__entity }}' 
-
-        - conditions: #DIM_DOWN - volume down
-            - condition: template
-              value_template: '{{ v__button_pressed == "DIM_DOWN" }}' 
-          sequence:
-            - service: '{{ v__entity_domain }}.volume_down'
-              target:
-                entity_id: '{{ v__entity }}' 
-        
-        - conditions: #DOWN_LP - mute
-            - condition: template
-              value_template: '{{ v__button_pressed == "DIM_DOWN_LP" }}' 
-          sequence:
-            - service: '{{ v__entity_domain }}.volume_mute'
-              target:
-                entity_id: '{{ v__entity }}' 
-                
-        - conditions: #COLOR_UP - Play media
-            - condition: template
-              value_template: '{{ v__button_pressed == "COLOR_UP" }}' 
-          sequence:
-            - choose:
-                - conditions:
-                    - condition: template
-                      value_template: '{{ states(v__entity) == "playing" }}'
-                  sequence:
-                    - service: '{{ v__entity_domain }}.media_pause'
-                      target:
-                        entity_id: '{{ v__entity }}'
-                - conditions:
-                    - condition: template
-                      value_template: '{{ states(v__entity) != "playing" }}'
-                  sequence:
-                    - service: '{{ v__entity_domain }}.media_play'
-                      target:
-                        entity_id: '{{ v__entity }}'
-                        
-        - conditions: #COLOR_DOWN - Stop media
-            - condition: template
-              value_template: '{{ v__button_pressed == "COLOR_DOWN" }}' 
-          sequence:
-            - choose:
-                - conditions:
-                    - condition: template
-                      value_template: '{{ states(v__entity) == "playing" }}'
-                  sequence:
-                    - service: '{{ v__entity_domain }}.media_stop'
-                      target:
-                        entity_id: '{{ v__entity }}'
-
-        - conditions: #HUE_RIGHT - next track 
-          - condition: template
-            value_template: '{{ v__button_pressed == "HUE_RIGHT" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.media_next_track'
-            target:
-              entity_id: '{{ v__entity }}'
- 
-        - conditions: #HUE_LEFT - previous track 
-          - condition: template
-            value_template: '{{ v__button_pressed == "HUE_LEFT" }}'
-          sequence:
-          - service: '{{ v__entity_domain }}.media_previous_track'
-            target:
-              entity_id: '{{ v__entity }}'
-
-        - conditions: #SATURATION_UP - next source
-          - condition: template
-            value_template: '{{ v__button_pressed == "SATURATION_UP" }}'
-          sequence:
-          - variables:
-              v__available_sources: >-
-                {% set source_list = state_attr(v__entity, "source_list") %}
-                {% if source_list is defined and source_list is iterable %}
-                  {{ source_list | list }}
-                {% else %}
-                  []
-                {% endif %}
-              v__current_source: '{{ state_attr(v__entity, "source") }}'
-              v__current_source_index: >-
-                {% if v__current_source in v__available_sources %}
-                  {{ v__available_sources.index(v__current_source) }}
-                {% else %}
-                  -1
-                {% endif %}
-          - service: '{{ v__entity_domain }}.select_source'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              source: >-
-                  {% if v__available_sources %}
-                    {{ v__available_sources[(v__current_source_index + 1) % v__available_sources | length] }}
-                  {% endif %}
- 
-        - conditions: #SATURATION_DOWN - previous source
-          - condition: template
-            value_template: '{{ v__button_pressed == "SATURATION_DOWN" }}'
-          sequence:
-          - variables:
-              v__available_sources: >-
-                {% set source_list = state_attr(v__entity, "source_list") %}
-                {% if source_list is defined and source_list is iterable %}
-                  {{ source_list | list }}
-                {% else %}
-                  []
-                {% endif %}
-              v__current_source: '{{ state_attr(v__entity, "source") }}'
-              v__current_source_index: >-
-                {% if v__current_source in v__available_sources %}
-                  {{ v__available_sources.index(v__current_source) }}
-                {% else %}
-                  -1
-                {% endif %}
-          - service: '{{ v__entity_domain }}.select_source'
-            target:
-              entity_id: '{{ v__entity }}'
-            data:
-              source: >-
-                  {% if v__available_sources %}
-                    {{ v__available_sources[(v__current_source_index - 1) % v__available_sources | length] }}
-                  {% endif %}            
-
-  default: []
-
+    default: []
