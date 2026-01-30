@@ -1,11 +1,11 @@
 blueprint:
-  name: SirYasko's aquarium & terrarium lighting control v3.0.0
+  name: SirYasko's aquarium & terrarium lighting control v4.0.0
   description: |
     Automates aquarium and terrarium lighting with advanced scheduling and smooth transitions for brightness and color (temperature, RGB, RGBW, HS, or XY).
     Configure start, peak, and end times with individual brightness and color settings for each phase.
     The blueprint calculates and applies gradual changes throughout the day, simulating natural sunrise, daylight, and sunset effects to closely follow the natural rhythm of daylight.
 
-    **Like what I do? Fuel my change with a coffee!**
+    **Like what I do? Fuel my work with a coffee!**
 
     [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/siryasko)
   source_url: https://github.com/SirYasko/HA-Blueprints/blob/main/aquarium.yaml
@@ -36,7 +36,7 @@ blueprint:
       collapsed: false
       input:
         i__entity_id:
-          name: Light source
+          name: (Required) Light source
           description: |
             Select the light source you want to control. It can be a single light or a group of lights.
             If you select a group of lights, the automation will apply the same settings to all lights in the group.
@@ -121,7 +121,22 @@ blueprint:
                   label: Saturday
                 - value: sunday
                   label: Sunday
-
+        i__days_of_week_helper:
+          name: '(Optional) Days of the week helper'
+          description: |
+            Overrides 'Days of the week' with the values from the helper.
+            If set, the automation will use the days from the helper instead of the 'Days of the week' from the input.
+            **Note:** The helper must be a input_text type with coma separated values.
+            **Supported values:** monday, tuesday, wednesday, thursday, friday, saturday, sunday.
+            To create a new Text helper:
+            - expand the dropdown and choose 'Create a new Text helper' (if available) or click [link](https://my.home-assistant.io/redirect/helpers/) or go to Settings -> Devices & Services -> Helpers
+            - add new text helper (name: any, icon: any, min length: 0, max length: 255, mode: text, pattern regex: empty)
+          default: null
+          selector:
+            entity:
+              domain: input_text
+              multiple: false
+              
     section_start_config:
       name: "## Start parameters"
       icon: mdi:clock-start
@@ -136,6 +151,17 @@ blueprint:
             The automation will not run if the current time is before this time.
           selector:
             time: {}
+        i__start_time_helper:
+          name: '(Optional) Start time helper'
+          description: |
+            Overrides 'Start time' with the value from the helper.
+            If set, the automation will use the time from the helper instead of the 'Start time' input.
+            **Note:** The helper must have only time (no date) and must be in 24-hour format.
+          default: null
+          selector:
+            entity:
+              domain: input_datetime
+              multiple: false            
         i__start_brightness_percent:
           name: Brightness (1–100%)
           description: |
@@ -181,12 +207,34 @@ blueprint:
           description: Time when the peak period begins.
           selector:
             time: {}
+        i__peak_time_beg_helper:
+          name: '(Optional) Peak time start helper'
+          description: |
+            Overrides 'Peak time start' with the value from the helper.
+            If set, the automation will use the time from the helper instead of the 'Peak time start' input.
+            **Note:** The helper must have only time (no date) and must be in 24-hour format.
+          default: null
+          selector:
+            entity:
+              domain: input_datetime
+              multiple: false            
         i__peak_time_end:
           name: Peak time end
           default: "14:00:00"
           description: Time when the peak period ends.
           selector:
             time: {}
+        i__peak_time_end_helper:
+          name: '(Optional) Peak time end helper'
+          description: |
+            Overrides 'Peak time end' with the value from the helper.
+            If set, the automation will use the time from the helper instead of the 'Peak time end' input.
+            **Note:** The helper must have only time (no date) and must be in 24-hour format.
+          default: null
+          selector:
+            entity:
+              domain: input_datetime
+              multiple: false            
         i__peak_brightness_percent:
           name: Brightness (1–100%)
           description: |
@@ -234,6 +282,17 @@ blueprint:
             The automation will not run if the current time is after this time.
           selector:
             time: {}
+        i__end_time_helper:
+          name: '(Optional) End time helper'
+          description: |
+            Overrides 'End time' with the value from the helper.
+            If set, the automation will use the time from the helper instead of the 'End time' input.
+            **Note:** The helper must have only time (no date) and must be in 24-hour format.
+          default: null
+          selector:
+            entity:
+              domain: input_datetime
+              multiple: false            
         i__end_brightness_percent:
           name: Brightness (1–100%)
           description: |
@@ -301,18 +360,83 @@ variables:
   v__entity_id: !input i__entity_id
   v__brightness_mode: !input i__brightness_mode
   v__color_mode: !input i__color_mode
+  
+  v__days_of_week_input: !input i__days_of_week
+  v__days_of_week_helper: !input i__days_of_week_helper
+  v__days_of_week: >-
+    {% if v__days_of_week_helper %}
+      {% set val = states(v__days_of_week_helper) %}
+      {% if val %}
+        {{ val.split(',') | map('trim') | map('lower') | list }}
+      {% else %}
+        []
+      {% endif %}
+    {% else %}
+      {{ v__days_of_week_input | map('lower') | list}}
+    {% endif %} 
 
-  v__days_of_week: !input i__days_of_week
-  v__start_time: !input i__start_time
+  v__start_time_helper: !input i__start_time_helper
+  v__start_time_input: !input i__start_time
+  v__start_time: >-
+    {% if v__start_time_helper %}
+      {% set val = states(v__start_time_helper) %}
+      {% set has_date = state_attr(v__start_time_helper, 'has_date') %}
+      {% if has_date %}
+        {{ strptime(val, '%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S') }}
+      {% else %}
+        {{ val }}
+      {% endif %}
+    {% else %}
+      {{ v__start_time_input }}
+    {% endif %}
   v__start_brightness_percent: !input i__start_brightness_percent
   v__start_color_temp_kelvin: !input i__start_color_temp_kelvin
   v__start_color_rgb: !input i__start_color_rgb
-  v__peak_time_beg: !input i__peak_time_beg
-  v__peak_time_end: !input i__peak_time_end
+  v__peak_time_beg_helper: !input i__peak_time_beg_helper
+  v__peak_time_beg_input: !input i__peak_time_beg
+  v__peak_time_beg: >- 
+    {% if v__peak_time_beg_helper %}
+      {% set val = states(v__peak_time_beg_helper) %}
+      {% set has_date = state_attr(v__peak_time_beg_helper, 'has_date') %}
+      {% if has_date %}
+        {{ strptime(val, '%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S') }}
+      {% else %}
+        {{ val }}
+      {% endif %}
+    {% else %}
+      {{ v__peak_time_beg_input }}
+    {% endif %}
+  v__peak_time_end_helper: !input i__peak_time_end_helper
+  v__peak_time_end_input: !input i__peak_time_end  
+  v__peak_time_end: >-  
+    {% if v__peak_time_end_helper %}
+      {% set val = states(v__peak_time_end_helper) %}
+      {% set has_date = state_attr(v__peak_time_end_helper, 'has_date') %}
+      {% if has_date %}
+        {{ strptime(val, '%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S') }}
+      {% else %}
+        {{ val }}
+      {% endif %}
+    {% else %}
+      {{ v__peak_time_end_input }}
+    {% endif %}
   v__peak_brightness_percent: !input i__peak_brightness_percent
   v__peak_color_temp_kelvin: !input i__peak_color_temp_kelvin
   v__peak_color_rgb: !input i__peak_color_rgb
-  v__end_time: !input i__end_time
+  v__end_time_helper: !input i__end_time_helper
+  v__end_time_input: !input i__end_time
+  v__end_time: >-
+    {% if v__end_time_helper %}
+      {% set val = states(v__end_time_helper) %}
+      {% set has_date = state_attr(v__end_time_helper, 'has_date') %}
+      {% if has_date %}
+        {{ strptime(val, '%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S') }}
+      {% else %}
+        {{ val }}
+      {% endif %}
+    {% else %}
+      {{ v__end_time_input }}
+    {% endif %}
   v__end_brightness_percent: !input i__end_brightness_percent
   v__end_color_temp_kelvin: !input i__end_color_temp_kelvin
   v__end_color_rgb: !input i__end_color_rgb
