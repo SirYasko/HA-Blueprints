@@ -1,5 +1,5 @@
 blueprint:
-  name: SirYasko's aquarium & terrarium lighting control v4.0.0
+  name: "SirYasko's aquarium & terrarium lighting control v4.1.0"
   description: |
     Automates aquarium and terrarium lighting with advanced scheduling and smooth transitions for brightness and color (temperature, RGB, RGBW, HS, or XY).
     Configure start, peak, and end times with individual brightness and color settings for each phase.
@@ -131,7 +131,7 @@ blueprint:
             To create a new Text helper:
             - expand the dropdown and choose 'Create a new Text helper' (if available) or click [link](https://my.home-assistant.io/redirect/helpers/) or go to Settings -> Devices & Services -> Helpers
             - add new text helper (name: any, icon: any, min length: 0, max length: 255, mode: text, pattern regex: empty)
-          default: null
+          default: ""
           selector:
             entity:
               domain: input_text
@@ -157,7 +157,7 @@ blueprint:
             Overrides 'Start time' with the value from the helper.
             If set, the automation will use the time from the helper instead of the 'Start time' input.
             **Note:** The helper must have only time (no date) and must be in 24-hour format.
-          default: null
+          default: ""
           selector:
             entity:
               domain: input_datetime
@@ -193,7 +193,7 @@ blueprint:
             **Note:** Works only if the change mode is set to: RGB / RGBW / Hue & Saturation.
           default: [255, 86, 0]
           selector:
-            color_rgb:
+            color_rgb: {}
 
     section_peak_config:
       name: "## Peak parameters"
@@ -213,7 +213,7 @@ blueprint:
             Overrides 'Peak time start' with the value from the helper.
             If set, the automation will use the time from the helper instead of the 'Peak time start' input.
             **Note:** The helper must have only time (no date) and must be in 24-hour format.
-          default: null
+          default: ""
           selector:
             entity:
               domain: input_datetime
@@ -230,7 +230,7 @@ blueprint:
             Overrides 'Peak time end' with the value from the helper.
             If set, the automation will use the time from the helper instead of the 'Peak time end' input.
             **Note:** The helper must have only time (no date) and must be in 24-hour format.
-          default: null
+          default: ""
           selector:
             entity:
               domain: input_datetime
@@ -246,6 +246,17 @@ blueprint:
               min: 1
               max: 100
               step: 1
+        i__peak_brightness_percent_helper:
+          name: '(Optional) Peak time brightness percent helper'
+          description: |
+            Overrides 'Peak time brightness (1–100%)' with the value from the helper.
+            If set, the automation will use the value from the helper instead of the 'Peak time brightness (1–100%)' input.
+            **Note:** The helper must have type counter with min value 1 and max value 100.
+          default: ""
+          selector:
+            entity:
+              domain: counter
+              multiple: false                
         i__peak_color_temp_kelvin:
           name: Color temperature (kelvins)
           description: |
@@ -266,7 +277,7 @@ blueprint:
             **Note:** Works only if the change mode is set to: RGB / RGBW / Hue & Saturation.
           default: [255, 255, 255]
           selector:
-            color_rgb:
+            color_rgb: {}
 
     section_end_config:
       name: "## End parameters"
@@ -288,7 +299,7 @@ blueprint:
             Overrides 'End time' with the value from the helper.
             If set, the automation will use the time from the helper instead of the 'End time' input.
             **Note:** The helper must have only time (no date) and must be in 24-hour format.
-          default: null
+          default: ""
           selector:
             entity:
               domain: input_datetime
@@ -324,7 +335,7 @@ blueprint:
             **Note:** Works only if the change mode is set to: RGB / RGBW / Hue & Saturation.
           default: [255, 86, 0]
           selector:
-            color_rgb:
+            color_rgb: {}
 
     section_other_config:
       name: "## Other parameters"
@@ -352,7 +363,7 @@ max_exceeded: silent
 
 trigger:
   - platform: time_pattern
-    minutes: /1
+    seconds: "0"
 
 variables:
   # Input variables
@@ -364,7 +375,7 @@ variables:
   v__days_of_week_input: !input i__days_of_week
   v__days_of_week_helper: !input i__days_of_week_helper
   v__days_of_week: >-
-    {% if v__days_of_week_helper %}
+    {% if v__days_of_week_helper | string != "" and v__days_of_week_helper != none %}
       {% set val = states(v__days_of_week_helper) %}
       {% if val %}
         {{ val.split(',') | map('trim') | map('lower') | list }}
@@ -378,7 +389,7 @@ variables:
   v__start_time_helper: !input i__start_time_helper
   v__start_time_input: !input i__start_time
   v__start_time: >-
-    {% if v__start_time_helper %}
+    {% if v__start_time_helper | string != "" and v__start_time_helper != none %}
       {% set val = states(v__start_time_helper) %}
       {% set has_date = state_attr(v__start_time_helper, 'has_date') %}
       {% if has_date %}
@@ -395,7 +406,7 @@ variables:
   v__peak_time_beg_helper: !input i__peak_time_beg_helper
   v__peak_time_beg_input: !input i__peak_time_beg
   v__peak_time_beg: >- 
-    {% if v__peak_time_beg_helper %}
+    {% if v__peak_time_beg_helper | string != "" and v__peak_time_beg_helper != none %}
       {% set val = states(v__peak_time_beg_helper) %}
       {% set has_date = state_attr(v__peak_time_beg_helper, 'has_date') %}
       {% if has_date %}
@@ -409,7 +420,7 @@ variables:
   v__peak_time_end_helper: !input i__peak_time_end_helper
   v__peak_time_end_input: !input i__peak_time_end  
   v__peak_time_end: >-  
-    {% if v__peak_time_end_helper %}
+    {% if v__peak_time_end_helper | string != "" and v__peak_time_end_helper != none %}
       {% set val = states(v__peak_time_end_helper) %}
       {% set has_date = state_attr(v__peak_time_end_helper, 'has_date') %}
       {% if has_date %}
@@ -420,13 +431,20 @@ variables:
     {% else %}
       {{ v__peak_time_end_input }}
     {% endif %}
-  v__peak_brightness_percent: !input i__peak_brightness_percent
+  v__peak_brightness_percent_input: !input i__peak_brightness_percent
+  v__peak_brightness_percent_helper: !input i__peak_brightness_percent_helper
+  v__peak_brightness_percent: >-
+    {% if v__peak_brightness_percent_helper | string != "" and v__peak_brightness_percent_helper != none %}
+      {{ states(v__peak_brightness_percent_helper) | int(0) }}
+    {% else %}
+      {{ v__peak_brightness_percent_input | int(100) }}
+    {% endif %}
   v__peak_color_temp_kelvin: !input i__peak_color_temp_kelvin
   v__peak_color_rgb: !input i__peak_color_rgb
   v__end_time_helper: !input i__end_time_helper
   v__end_time_input: !input i__end_time
   v__end_time: >-
-    {% if v__end_time_helper %}
+    {% if v__end_time_helper | string != "" and v__end_time_helper != none %}
       {% set val = states(v__end_time_helper) %}
       {% set has_date = state_attr(v__end_time_helper, 'has_date') %}
       {% if has_date %}
